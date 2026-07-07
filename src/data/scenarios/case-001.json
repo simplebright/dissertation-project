@@ -1,0 +1,64 @@
+{
+  "id": "case-001",
+  "title": "Suspicious Login Activity",
+  "difficulty": "Beginner",
+  "description": "A student account shows unexpected logins from unfamiliar locations. Reconstruct the browser timeline to identify when and how the sessions occurred.",
+  "events": [
+    {
+      "id": "evt-001-01",
+      "timestamp": "2024-11-08T08:47:12Z",
+      "type": "search",
+      "description": "Google search: \"university student portal login\"",
+      "correctOrder": 1,
+      "explanation": "The user began by searching for the official university login page, establishing intent to access the portal."
+    },
+    {
+      "id": "evt-001-02",
+      "timestamp": "2024-11-08T08:48:03Z",
+      "type": "history",
+      "description": "Visited https://portal.westfield-uni.ac.uk/login (title: Student Portal – Sign In)",
+      "correctOrder": 2,
+      "explanation": "The search result led directly to the university authentication page."
+    },
+    {
+      "id": "evt-001-03",
+      "timestamp": "2024-11-08T08:49:31Z",
+      "type": "cookie",
+      "description": "Cookie set: PHPSESSID on portal.westfield-uni.ac.uk (expires session)",
+      "correctOrder": 3,
+      "explanation": "A session cookie was issued after the login page loaded, indicating an active browser session with the portal."
+    },
+    {
+      "id": "evt-001-04",
+      "timestamp": "2024-11-08T08:51:18Z",
+      "type": "history",
+      "description": "Visited https://portal.westfield-uni.ac.uk/dashboard (title: Student Dashboard)",
+      "correctOrder": 4,
+      "explanation": "Successful authentication redirected the browser to the student dashboard."
+    },
+    {
+      "id": "evt-001-05",
+      "timestamp": "2024-11-08T14:06:44Z",
+      "type": "search",
+      "description": "Google search: \"westfield university password reset forgot\"",
+      "correctOrder": 5,
+      "explanation": "Hours later, a password reset search suggests either account compromise or an unauthorised party attempting credential recovery."
+    },
+    {
+      "id": "evt-001-06",
+      "timestamp": "2024-11-08T14:07:29Z",
+      "type": "history",
+      "description": "Visited https://portal.westfield-uni.ac.uk/account/reset-password",
+      "correctOrder": 6,
+      "explanation": "The attacker navigated to the self-service password reset flow, a common step after gaining partial account access."
+    },
+    {
+      "id": "evt-001-07",
+      "timestamp": "2024-11-08T14:08:55Z",
+      "type": "cookie",
+      "description": "Cookie updated: auth_token on portal.westfield-uni.ac.uk (expires 2024-11-15)",
+      "correctOrder": 7,
+      "explanation": "A persistent authentication token was written, confirming the password reset or re-login completed successfully."
+    }
+  ]
+}

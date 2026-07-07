@@ -1,0 +1,88 @@
+{
+  "id": "case-003",
+  "title": "Cross-Browser Activity Correlation",
+  "difficulty": "Advanced",
+  "description": "Evidence spans Chrome and Firefox profiles on the same machine. Build a unified timeline to correlate visits, searches, and tab activity across browsers.",
+  "events": [
+    {
+      "id": "evt-003-01",
+      "timestamp": "2024-09-14T10:15:33Z",
+      "type": "history",
+      "description": "[Chrome] Visited https://jira.techflow.io/browse/DEPLOY-482 (title: DEPLOY-482 – Production Release)",
+      "correctOrder": 1,
+      "explanation": "Chrome activity began with a Jira ticket related to a production deployment, anchoring the investigation timeline."
+    },
+    {
+      "id": "evt-003-02",
+      "timestamp": "2024-09-14T10:17:08Z",
+      "type": "search",
+      "description": "[Firefox] Google search: \"kubernetes rolling update zero downtime\"",
+      "correctOrder": 2,
+      "explanation": "Firefox shows a technical search consistent with preparing for the deployment referenced in Chrome."
+    },
+    {
+      "id": "evt-003-03",
+      "timestamp": "2024-09-14T10:18:44Z",
+      "type": "history",
+      "description": "[Firefox] Visited https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-intro/ (title: Performing a Rolling Update)",
+      "correctOrder": 3,
+      "explanation": "The Firefox search led to official Kubernetes documentation on rolling updates."
+    },
+    {
+      "id": "evt-003-04",
+      "timestamp": "2024-09-14T10:21:02Z",
+      "type": "cookie",
+      "description": "[Chrome] Cookie set: JSESSIONID on jira.techflow.io (expires session)",
+      "correctOrder": 4,
+      "explanation": "A fresh Jira session cookie in Chrome indicates re-authentication or session renewal during the deployment review."
+    },
+    {
+      "id": "evt-003-05",
+      "timestamp": "2024-09-14T10:23:19Z",
+      "type": "download",
+      "description": "[Chrome] Downloaded deploy-config-prod-v2.4.yaml to C:\\Users\\adevans\\Downloads\\ (4.2 KB)",
+      "correctOrder": 5,
+      "explanation": "A production deployment configuration was downloaded via Chrome, a critical artefact for the release timeline."
+    },
+    {
+      "id": "evt-003-06",
+      "timestamp": "2024-09-14T10:25:37Z",
+      "type": "search",
+      "description": "[Chrome] Google search: \"techflow internal wiki deployment checklist\"",
+      "correctOrder": 6,
+      "explanation": "Chrome was used to locate the internal deployment checklist on the company wiki."
+    },
+    {
+      "id": "evt-003-07",
+      "timestamp": "2024-09-14T10:26:11Z",
+      "type": "history",
+      "description": "[Chrome] Visited https://wiki.techflow.io/display/OPS/Production+Deployment+Checklist (title: Production Deployment Checklist)",
+      "correctOrder": 7,
+      "explanation": "The internal wiki checklist page was accessed immediately after the Chrome search."
+    },
+    {
+      "id": "evt-003-08",
+      "timestamp": "2024-09-14T10:28:54Z",
+      "type": "cookie",
+      "description": "[Firefox] Cookie set: wiki_session on wiki.techflow.io (HttpOnly, expires 2024-09-21)",
+      "correctOrder": 8,
+      "explanation": "Firefox independently authenticated to the wiki, showing parallel cross-browser access to internal resources."
+    },
+    {
+      "id": "evt-003-09",
+      "timestamp": "2024-09-14T10:31:06Z",
+      "type": "history",
+      "description": "[Firefox] Visited https://ci.techflow.io/job/production-deploy/ (title: Jenkins – production-deploy #117)",
+      "correctOrder": 9,
+      "explanation": "Firefox navigated to the Jenkins CI job page, indicating the deployment pipeline was monitored from a second browser."
+    },
+    {
+      "id": "evt-003-10",
+      "timestamp": "2024-09-14T10:33:48Z",
+      "type": "download",
+      "description": "[Firefox] Downloaded jenkins-build-117-console.log to C:\\Users\\adevans\\Downloads\\ (128 KB)",
+      "correctOrder": 10,
+      "explanation": "The Jenkins console log was saved in Firefox, completing the cross-browser evidence chain for the deployment event."
+    }
+  ]
+}
