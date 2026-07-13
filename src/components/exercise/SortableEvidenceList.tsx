@@ -16,6 +16,7 @@ interface SortableEvidenceListProps {
   emptyMessage?: string;
   footer?: ReactNode;
   showTimestamp?: boolean;
+  mode?: 'beginner' | 'advanced';
 }
 
 export function SortableEvidenceList({
@@ -26,6 +27,7 @@ export function SortableEvidenceList({
   emptyMessage = 'No evidence items',
   footer,
   showTimestamp = true,
+  mode = 'beginner',
 }: SortableEvidenceListProps) {
   return (
     <div className="flex h-full flex-col">
@@ -52,7 +54,7 @@ export function SortableEvidenceList({
                   id={id}
                   className="cursor-grab rounded-xl transition-transform duration-300 active:cursor-grabbing"
                 >
-                  <EvidenceCard event={event} showTimestamp={showTimestamp} />
+                  <EvidenceCard event={event} showTimestamp={showTimestamp} mode={mode} />
                 </SortableItem>
               );
             })

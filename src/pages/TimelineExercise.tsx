@@ -41,7 +41,8 @@ export function TimelineExercise() {
     return <Navigate to={`/exercise/${caseId}/mode`} replace />;
   }
 
-  const showTimestamp = exerciseState.mode === 'beginner';
+  const exerciseMode = exerciseState?.mode ?? 'beginner';
+  const showTimestamp = exerciseMode === 'beginner';
 
   return (
     <DndProvider
@@ -49,7 +50,11 @@ export function TimelineExercise() {
       onDragEnd={handleDragEnd}
       overlay={
         activeEvent ? (
-          <EvidenceCard event={activeEvent} showTimestamp={showTimestamp} />
+          <EvidenceCard
+            event={activeEvent}
+            showTimestamp={showTimestamp}
+            mode={exerciseMode}
+          />
         ) : null
       }
     >

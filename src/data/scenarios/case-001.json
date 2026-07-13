@@ -10,7 +10,15 @@
       "type": "search",
       "description": "Google search: \"university student portal login\"",
       "correctOrder": 1,
-      "explanation": "The user began by searching for the official university login page, establishing intent to access the portal."
+      "explanation": "The user began by searching for the official university login page, establishing intent to access the portal.",
+      "relationships": [
+        { "type": "before", "targetEventId": "evt-001-02", "label": "A search for the login page often precedes a direct visit to that page." },
+        { "type": "before", "targetEventId": "evt-001-03", "label": "A login page search commonly appears before session cookies are created." }
+      ],
+      "hints": [
+        "Searches usually identify the pages the user intends to open next.",
+        "A search for a login page commonly appears before a direct visit to that login page."
+      ]
     },
     {
       "id": "evt-001-02",
@@ -18,7 +26,14 @@
       "type": "history",
       "description": "Visited https://portal.westfield-uni.ac.uk/login (title: Student Portal – Sign In)",
       "correctOrder": 2,
-      "explanation": "The search result led directly to the university authentication page."
+      "explanation": "The search result led directly to the university authentication page.",
+      "relationships": [
+        { "type": "before", "targetEventId": "evt-001-03", "label": "Loading an authenticated login page often precedes session cookies being set." }
+      ],
+      "hints": [
+        "A visit to a login page usually comes before related session cookies appear.",
+        "Direct navigation to a portal login page is a common precursor to authentication artefacts."
+      ]
     },
     {
       "id": "evt-001-03",
@@ -26,7 +41,15 @@
       "type": "cookie",
       "description": "Cookie set: PHPSESSID on portal.westfield-uni.ac.uk (expires session)",
       "correctOrder": 3,
-      "explanation": "A session cookie was issued after the login page loaded, indicating an active browser session with the portal."
+      "explanation": "A session cookie was issued after the login page loaded, indicating an active browser session with the portal.",
+      "relationships": [
+        { "type": "after", "targetEventId": "evt-001-02", "label": "Session cookies are commonly set after a user loads an authenticated page." },
+        { "type": "before", "targetEventId": "evt-001-04", "label": "Successful authentication usually leads to a dashboard or authenticated area." }
+      ],
+      "hints": [
+        "Session cookies are commonly set after a user loads an authenticated page.",
+        "An active session cookie often appears after visiting the page it is tied to."
+      ]
     },
     {
       "id": "evt-001-04",
@@ -34,7 +57,14 @@
       "type": "history",
       "description": "Visited https://portal.westfield-uni.ac.uk/dashboard (title: Student Dashboard)",
       "correctOrder": 4,
-      "explanation": "Successful authentication redirected the browser to the student dashboard."
+      "explanation": "Successful authentication redirected the browser to the student dashboard.",
+      "relationships": [
+        { "type": "before", "targetEventId": "evt-001-05", "label": "A later password reset search suggests a change in account state after dashboard access." }
+      ],
+      "hints": [
+        "Dashboard access indicates an authenticated session has already been established.",
+        "Successful login is usually followed by access to an authenticated area rather than another login page."
+      ]
     },
     {
       "id": "evt-001-05",
@@ -42,7 +72,14 @@
       "type": "search",
       "description": "Google search: \"westfield university password reset forgot\"",
       "correctOrder": 5,
-      "explanation": "Hours later, a password reset search suggests either account compromise or an unauthorised party attempting credential recovery."
+      "explanation": "Hours later, a password reset search suggests either account compromise or an unauthorised party attempting credential recovery.",
+      "relationships": [
+        { "type": "before", "targetEventId": "evt-001-06", "label": "A search for password reset typically precedes opening a reset page." }
+      ],
+      "hints": [
+        "A password reset search often reflects a changed account state or lost access.",
+        "Searches for credential recovery normally precede attempts to perform a reset."
+      ]
     },
     {
       "id": "evt-001-06",
@@ -50,7 +87,14 @@
       "type": "history",
       "description": "Visited https://portal.westfield-uni.ac.uk/account/reset-password",
       "correctOrder": 6,
-      "explanation": "The attacker navigated to the self-service password reset flow, a common step after gaining partial account access."
+      "explanation": "The attacker navigated to the self-service password reset flow, a common step after gaining partial account access.",
+      "relationships": [
+        { "type": "before", "targetEventId": "evt-001-07", "label": "Visiting a reset page usually precedes evidence of a successful reset or re-authentication." }
+      ],
+      "hints": [
+        "Password reset pages are usually reached after identifying credential recovery options.",
+        "A reset flow visit often precedes account-level cookie or token changes."
+      ]
     },
     {
       "id": "evt-001-07",
@@ -58,7 +102,14 @@
       "type": "cookie",
       "description": "Cookie updated: auth_token on portal.westfield-uni.ac.uk (expires 2024-11-15)",
       "correctOrder": 7,
-      "explanation": "A persistent authentication token was written, confirming the password reset or re-login completed successfully."
+      "explanation": "A persistent authentication token was written, confirming the password reset or re-login completed successfully.",
+      "relationships": [
+        { "type": "after", "targetEventId": "evt-001-06", "label": "A persistent authentication token often appears after a reset page has been completed." }
+      ],
+      "hints": [
+        "A persistent authentication token indicates the account state was changed or restored.",
+        "New or updated auth cookies are strong indicators of a completed authentication change."
+      ]
     }
   ]
 }

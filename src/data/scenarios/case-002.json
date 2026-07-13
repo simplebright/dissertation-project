@@ -10,7 +10,15 @@
       "type": "search",
       "description": "Bing search: \"meridian corp intranet document library\"",
       "correctOrder": 1,
-      "explanation": "The session started with a targeted search for the internal document repository."
+      "explanation": "The session started with a targeted search for the internal document repository.",
+      "relationships": [
+        { "type": "before", "targetEventId": "evt-002-02", "label": "The search result led directly to the corporate intranet landing page." },
+        { "type": "before", "targetEventId": "evt-002-03", "label": "A targeted intranet search commonly precedes a session cookie being set." }
+      ],
+      "hints": [
+        "Users often start from a search before navigating to a known internal portal.",
+        "A successful intranet visit frequently leads to authentication artefacts such as session cookies."
+      ]
     },
     {
       "id": "evt-002-02",
@@ -18,7 +26,14 @@
       "type": "history",
       "description": "Visited https://intranet.meridiancorp.local/ (title: Meridian Corp Intranet Home)",
       "correctOrder": 2,
-      "explanation": "The browser accessed the corporate intranet landing page from the search result."
+      "explanation": "The browser accessed the corporate intranet landing page from the search result.",
+      "relationships": [
+        { "type": "before", "targetEventId": "evt-002-03", "label": "Loading an authenticated portal page commonly precedes session cookie creation." }
+      ],
+      "hints": [
+        "A successful intranet visit frequently leads to authentication artefacts such as session cookies.",
+        "The landing page is often the first step before deeper authenticated navigation."
+      ]
     },
     {
       "id": "evt-002-03",
@@ -26,7 +41,15 @@
       "type": "cookie",
       "description": "Cookie set: SSO_SESSION on intranet.meridiancorp.local (HttpOnly, expires 2024-10-22T20:33:42Z)",
       "correctOrder": 3,
-      "explanation": "Single sign-on authentication established a session cookie, confirming the user was logged into the intranet."
+      "explanation": "Single sign-on authentication established a session cookie, confirming the user was logged into the intranet.",
+      "relationships": [
+        { "type": "after", "targetEventId": "evt-002-02", "label": "Single sign-on authentication typically follows reaching the authenticated portal." },
+        { "type": "before", "targetEventId": "evt-002-04", "label": "Authenticated sessions often enable subsequent protected internal searches." }
+      ],
+      "hints": [
+        "Session cookies usually appear after a successful authentication event.",
+        "An active session cookie can indicate the user was able to access protected internal pages."
+      ]
     },
     {
       "id": "evt-002-04",
@@ -34,7 +57,14 @@
       "type": "search",
       "description": "Intranet search: \"Q3 2024 financial report confidential\"",
       "correctOrder": 4,
-      "explanation": "An internal search for confidential financial material indicates deliberate targeting of sensitive files."
+      "explanation": "An internal search for confidential financial material indicates deliberate targeting of sensitive files.",
+      "relationships": [
+        { "type": "before", "targetEventId": "evt-002-05", "label": "An internal search for sensitive material commonly precedes opening the exact report." }
+      ],
+      "hints": [
+        "A sensitive file search often reflects a deliberate intent to locate restricted material.",
+        "Searches for confidential documents frequently precede the targeted document page being opened."
+      ]
     },
     {
       "id": "evt-002-05",
@@ -42,7 +72,14 @@
       "type": "history",
       "description": "Visited https://intranet.meridiancorp.local/finance/reports/q3-2024 (title: Q3 2024 Financial Report)",
       "correctOrder": 5,
-      "explanation": "The search returned the restricted finance report page in the browser history."
+      "explanation": "The search returned the restricted finance report page in the browser history.",
+      "relationships": [
+        { "type": "before", "targetEventId": "evt-002-06", "label": "Opening a report page frequently precedes downloading the document." }
+      ],
+      "hints": [
+        "Opening a report page is often the precursor to a local download.",
+        "Restricted finance reports are frequently downloaded after being accessed in a browser."
+      ]
     },
     {
       "id": "evt-002-06",
@@ -50,7 +87,15 @@
       "type": "download",
       "description": "Downloaded Q3_2024_Financial_Report_CONFIDENTIAL.pdf to C:\\Users\\SharedWS\\Downloads\\ (1.8 MB, Chrome)",
       "correctOrder": 6,
-      "explanation": "The confidential PDF was saved locally, creating a key exfiltration artefact on the shared workstation."
+      "explanation": "The confidential PDF was saved locally, creating a key exfiltration artefact on the shared workstation.",
+      "relationships": [
+        { "type": "before", "targetEventId": "evt-002-07", "label": "Saving a document often precedes attempts to move or share it elsewhere." },
+        { "type": "before", "targetEventId": "evt-002-08", "label": "Downloading sensitive material often precedes cloud transfer or sharing activity." }
+      ],
+      "hints": [
+        "A local download can indicate preparation for later transfer or exfiltration.",
+        "The order of download and cloud activity can indicate intent and execution sequence."
+      ]
     },
     {
       "id": "evt-002-07",
@@ -58,7 +103,15 @@
       "type": "history",
       "description": "Visited https://www.google.com/drive/ (title: Google Drive – Home)",
       "correctOrder": 7,
-      "explanation": "Shortly after the download, the user opened a cloud storage service, suggesting intent to upload or transfer the file."
+      "explanation": "Shortly after the download, the user opened a cloud storage service, suggesting intent to upload or transfer the file.",
+      "relationships": [
+        { "type": "after", "targetEventId": "evt-002-06", "label": "Opening cloud storage shortly after a sensitive download can suggest transfer intent." },
+        { "type": "before", "targetEventId": "evt-002-08", "label": "Visiting cloud storage can precede cookie refresh during account use." }
+      ],
+      "hints": [
+        "Opening cloud storage shortly after a sensitive download can suggest transfer intent.",
+        "Cloud home pages are often opened before authenticated upload activity."
+      ]
     },
     {
       "id": "evt-002-08",
@@ -66,7 +119,14 @@
       "type": "cookie",
       "description": "Cookie refreshed: SID on .google.com (Secure, SameSite=None)",
       "correctOrder": 8,
-      "explanation": "An active Google session cookie confirms the cloud storage account was already authenticated during the transfer window."
+      "explanation": "An active Google session cookie confirms the cloud storage account was already authenticated during the transfer window.",
+      "relationships": [
+        { "type": "after", "targetEventId": "evt-002-07", "label": "Cloud storage cookie refresh commonly follows visiting the service." }
+      ],
+      "hints": [
+        "A refreshed cloud session cookie suggests active authenticated use of the service.",
+        "Cloud session activity is often authenticated during or shortly after opening the cloud home page."
+      ]
     }
   ]
 }

@@ -1,3 +1,11 @@
+export type EventRelationshipType = 'before' | 'after' | 'related';
+
+export interface EventRelationship {
+  type: EventRelationshipType;
+  targetEventId: string;
+  label?: string;
+}
+
 export type Difficulty = 'Beginner' | 'Intermediate' | 'Advanced';
 
 export type EventType = 'history' | 'search' | 'cookie' | 'download';
@@ -9,6 +17,9 @@ export interface ForensicEvent {
   description: string;
   correctOrder: number;
   explanation: string;
+  relationships?: EventRelationship[];
+  hints?: string[];
+  visibleInAdvanced?: boolean;
 }
 
 export interface CaseSummary {

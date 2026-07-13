@@ -10,7 +10,15 @@
       "type": "history",
       "description": "[Chrome] Visited https://jira.techflow.io/browse/DEPLOY-482 (title: DEPLOY-482 – Production Release)",
       "correctOrder": 1,
-      "explanation": "Chrome activity began with a Jira ticket related to a production deployment, anchoring the investigation timeline."
+      "explanation": "Chrome activity began with a Jira ticket related to a production deployment, anchoring the investigation timeline.",
+      "relationships": [
+        { "type": "before", "targetEventId": "evt-003-02", "label": "The Jira ticket often motivates related research or preparation in another browser." },
+        { "type": "before", "targetEventId": "evt-003-05", "label": "Production release review can precede downloading deployment artefacts." }
+      ],
+      "hints": [
+        "A Jira ticket for a production release may drive related research activity elsewhere.",
+        "Release review often precedes deployment or configuration-related artefacts."
+      ]
     },
     {
       "id": "evt-003-02",
@@ -18,7 +26,14 @@
       "type": "search",
       "description": "[Firefox] Google search: \"kubernetes rolling update zero downtime\"",
       "correctOrder": 2,
-      "explanation": "Firefox shows a technical search consistent with preparing for the deployment referenced in Chrome."
+      "explanation": "Firefox shows a technical search consistent with preparing for the deployment referenced in Chrome.",
+      "relationships": [
+        { "type": "before", "targetEventId": "evt-003-03", "label": "A technical search commonly leads to the referenced documentation page." }
+      ],
+      "hints": [
+        "A technical search often precedes opening the supporting documentation.",
+        "Research activities in a second browser can relate to the primary task in another browser."
+      ]
     },
     {
       "id": "evt-003-03",
@@ -26,7 +41,15 @@
       "type": "history",
       "description": "[Firefox] Visited https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-intro/ (title: Performing a Rolling Update)",
       "correctOrder": 3,
-      "explanation": "The Firefox search led to official Kubernetes documentation on rolling updates."
+      "explanation": "The Firefox search led to official Kubernetes documentation on rolling updates.",
+      "relationships": [
+        { "type": "before", "targetEventId": "evt-003-04", "label": "Documentation research often continues in parallel with deployment authentication." },
+        { "type": "before", "targetEventId": "evt-003-08", "label": "Research activity in Firefox can align with later wiki authentication events." }
+      ],
+      "hints": [
+        "Technical documentation pages often follow focused searches.",
+        "Cross-browser research can provide supporting context for a primary activity in another browser."
+      ]
     },
     {
       "id": "evt-003-04",
@@ -34,7 +57,15 @@
       "type": "cookie",
       "description": "[Chrome] Cookie set: JSESSIONID on jira.techflow.io (expires session)",
       "correctOrder": 4,
-      "explanation": "A fresh Jira session cookie in Chrome indicates re-authentication or session renewal during the deployment review."
+      "explanation": "A fresh Jira session cookie in Chrome indicates re-authentication or session renewal during the deployment review.",
+      "relationships": [
+        { "type": "after", "targetEventId": "evt-003-01", "label": "Session cookies usually appear after accessing the target application." },
+        { "type": "before", "targetEventId": "evt-003-05", "label": "An authenticated session often precedes downloading protected artefacts." }
+      ],
+      "hints": [
+        "Session cookies often indicate an authenticated browser session during deployment review.",
+        "Re-authentication can appear after returning to or reviewing a protected application page."
+      ]
     },
     {
       "id": "evt-003-05",
@@ -42,7 +73,15 @@
       "type": "download",
       "description": "[Chrome] Downloaded deploy-config-prod-v2.4.yaml to C:\\Users\\adevans\\Downloads\\ (4.2 KB)",
       "correctOrder": 5,
-      "explanation": "A production deployment configuration was downloaded via Chrome, a critical artefact for the release timeline."
+      "explanation": "A production deployment configuration was downloaded via Chrome, a critical artefact for the release timeline.",
+      "relationships": [
+        { "type": "after", "targetEventId": "evt-003-04", "label": "Downloading protected artefacts often follows an authenticated session." },
+        { "type": "before", "targetEventId": "evt-003-06", "label": "Downloading a deployment configuration often precedes further deployment checklist research." }
+      ],
+      "hints": [
+        "Downloading production configuration is a strong indicator of deployment preparation.",
+        "Protected downloads often require an authenticated session established earlier."
+      ]
     },
     {
       "id": "evt-003-06",
@@ -50,7 +89,14 @@
       "type": "search",
       "description": "[Chrome] Google search: \"techflow internal wiki deployment checklist\"",
       "correctOrder": 6,
-      "explanation": "Chrome was used to locate the internal deployment checklist on the company wiki."
+      "explanation": "Chrome was used to locate the internal deployment checklist on the company wiki.",
+      "relationships": [
+        { "type": "before", "targetEventId": "evt-003-07", "label": "A deployment checklist search typically leads to the checklist page." }
+      ],
+      "hints": [
+        "A deployment checklist search often precedes opening the internal wiki page.",
+        "Internal deployment preparation usually references checklist artefacts before or during deployment."
+      ]
     },
     {
       "id": "evt-003-07",
@@ -58,7 +104,14 @@
       "type": "history",
       "description": "[Chrome] Visited https://wiki.techflow.io/display/OPS/Production+Deployment+Checklist (title: Production Deployment Checklist)",
       "correctOrder": 7,
-      "explanation": "The internal wiki checklist page was accessed immediately after the Chrome search."
+      "explanation": "The internal wiki checklist page was accessed immediately after the Chrome search.",
+      "relationships": [
+        { "type": "before", "targetEventId": "evt-003-08", "label": "Checklist access in Chrome can correlate with wiki authentication in Firefox." }
+      ],
+      "hints": [
+        "A checklist page visit often represents a direct follow-up to a checklist search.",
+        "Cross-browser wiki access can show parallel or complementary investigation activity."
+      ]
     },
     {
       "id": "evt-003-08",
@@ -66,7 +119,15 @@
       "type": "cookie",
       "description": "[Firefox] Cookie set: wiki_session on wiki.techflow.io (HttpOnly, expires 2024-09-21)",
       "correctOrder": 8,
-      "explanation": "Firefox independently authenticated to the wiki, showing parallel cross-browser access to internal resources."
+      "explanation": "Firefox independently authenticated to the wiki, showing parallel cross-browser access to internal resources.",
+      "relationships": [
+        { "type": "after", "targetEventId": "evt-003-07", "label": "Wiki authentication in Firefox can align with Chrome wiki access." },
+        { "type": "before", "targetEventId": "evt-003-09", "label": "Wiki session cookies often precede further navigation to protected resources." }
+      ],
+      "hints": [
+        "Wiki session cookies often follow authentication or page access activity.",
+        "Parallel wiki access in Firefox can complement deployment checklist review in Chrome."
+      ]
     },
     {
       "id": "evt-003-09",
@@ -74,7 +135,15 @@
       "type": "history",
       "description": "[Firefox] Visited https://ci.techflow.io/job/production-deploy/ (title: Jenkins – production-deploy #117)",
       "correctOrder": 9,
-      "explanation": "Firefox navigated to the Jenkins CI job page, indicating the deployment pipeline was monitored from a second browser."
+      "explanation": "Firefox navigated to the Jenkins CI job page, indicating the deployment pipeline was monitored from a second browser.",
+      "relationships": [
+        { "type": "after", "targetEventId": "evt-003-08", "label": "CI monitoring often follows authentication to supporting resources." },
+        { "type": "before", "targetEventId": "evt-003-10", "label": "CI job monitoring often precedes saving or downloading related build artefacts." }
+      ],
+      "hints": [
+        "Monitoring a CI job often reflects continued deployment investigation.",
+        "CI job pages are commonly visited before related build logs are saved."
+      ]
     },
     {
       "id": "evt-003-10",
@@ -82,7 +151,14 @@
       "type": "download",
       "description": "[Firefox] Downloaded jenkins-build-117-console.log to C:\\Users\\adevans\\Downloads\\ (128 KB)",
       "correctOrder": 10,
-      "explanation": "The Jenkins console log was saved in Firefox, completing the cross-browser evidence chain for the deployment event."
+      "explanation": "The Jenkins console log was saved in Firefox, completing the cross-browser evidence chain for the deployment event.",
+      "relationships": [
+        { "type": "after", "targetEventId": "evt-003-09", "label": "Saving a console log often follows monitoring the related CI job page." }
+      ],
+      "hints": [
+        "Saving a CI console log often follows monitoring the related job page.",
+        "Build logs can preserve evidence of deployment steps after CI investigation."
+      ]
     }
   ]
 }
