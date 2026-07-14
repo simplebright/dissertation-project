@@ -16,8 +16,9 @@
         { "type": "before", "targetEventId": "evt-002-03", "label": "A targeted intranet search commonly precedes a session cookie being set." }
       ],
       "hints": [
+        "Think about which action usually happens first when a user wants to reach an internal system.",
         "Users often start from a search before navigating to a known internal portal.",
-        "A successful intranet visit frequently leads to authentication artefacts such as session cookies."
+        "The intranet search should be placed first, before the landing page visit and before the SSO session cookie is set."
       ]
     },
     {
@@ -31,8 +32,9 @@
         { "type": "before", "targetEventId": "evt-002-03", "label": "Loading an authenticated portal page commonly precedes session cookie creation." }
       ],
       "hints": [
+        "Think about the first destination after someone clicks a Bing search result.",
         "A successful intranet visit frequently leads to authentication artefacts such as session cookies.",
-        "The landing page is often the first step before deeper authenticated navigation."
+        "The intranet landing page visit should be placed right after the search and before the SSO session cookie appears."
       ]
     },
     {
@@ -47,8 +49,9 @@
         { "type": "before", "targetEventId": "evt-002-04", "label": "Authenticated sessions often enable subsequent protected internal searches." }
       ],
       "hints": [
+        "Think about which artefact is set once a portal login completes.",
         "Session cookies usually appear after a successful authentication event.",
-        "An active session cookie can indicate the user was able to access protected internal pages."
+        "The SSO_SESSION cookie should be placed right after the intranet home page visit and before the internal confidential search."
       ]
     },
     {
@@ -62,8 +65,9 @@
         { "type": "before", "targetEventId": "evt-002-05", "label": "An internal search for sensitive material commonly precedes opening the exact report." }
       ],
       "hints": [
+        "Think about what happens once the user is authenticated and looking for a specific document.",
         "A sensitive file search often reflects a deliberate intent to locate restricted material.",
-        "Searches for confidential documents frequently precede the targeted document page being opened."
+        "The internal Q3 search should be placed right after the SSO cookie and immediately before the report page is opened."
       ]
     },
     {
@@ -77,8 +81,9 @@
         { "type": "before", "targetEventId": "evt-002-06", "label": "Opening a report page frequently precedes downloading the document." }
       ],
       "hints": [
+        "Think about which page appears immediately after running a search.",
         "Opening a report page is often the precursor to a local download.",
-        "Restricted finance reports are frequently downloaded after being accessed in a browser."
+        "The Q3 report page visit should be placed right after the internal search and before the PDF download occurs."
       ]
     },
     {
@@ -93,8 +98,9 @@
         { "type": "before", "targetEventId": "evt-002-08", "label": "Downloading sensitive material often precedes cloud transfer or sharing activity." }
       ],
       "hints": [
+        "Think about what a user typically does once the report page is open.",
         "A local download can indicate preparation for later transfer or exfiltration.",
-        "The order of download and cloud activity can indicate intent and execution sequence."
+        "The confidential PDF download should be placed right after the report page visit and before the cloud storage activity that follows."
       ]
     },
     {
@@ -109,8 +115,9 @@
         { "type": "before", "targetEventId": "evt-002-08", "label": "Visiting cloud storage can precede cookie refresh during account use." }
       ],
       "hints": [
+        "Think about where someone might take a file shortly after downloading a confidential document.",
         "Opening cloud storage shortly after a sensitive download can suggest transfer intent.",
-        "Cloud home pages are often opened before authenticated upload activity."
+        "The Google Drive home page visit should be placed right after the PDF download and immediately before the SID cookie refresh."
       ]
     },
     {
@@ -124,8 +131,9 @@
         { "type": "after", "targetEventId": "evt-002-07", "label": "Cloud storage cookie refresh commonly follows visiting the service." }
       ],
       "hints": [
+        "Think about which cookie activity confirms an active cloud account.",
         "A refreshed cloud session cookie suggests active authenticated use of the service.",
-        "Cloud session activity is often authenticated during or shortly after opening the cloud home page."
+        "The Google SID cookie refresh should be placed last, immediately after the Drive home page visit."
       ]
     }
   ]

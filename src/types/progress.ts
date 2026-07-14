@@ -3,6 +3,7 @@ export interface CaseCompletion {
   score: number;
   completionTimeMs: number;
   completedAt: string;
+  hintsUsed?: number;
 }
 
 export interface ProgressData {

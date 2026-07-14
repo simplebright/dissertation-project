@@ -16,8 +16,9 @@
         { "type": "before", "targetEventId": "evt-001-03", "label": "A login page search commonly appears before session cookies are created." }
       ],
       "hints": [
-        "Searches usually identify the pages the user intends to open next.",
-        "A search for a login page commonly appears before a direct visit to that login page."
+        "Think about which action usually happens first when someone wants to reach a specific website.",
+        "Search activities often occur before visits to the discovered page.",
+        "The search event should be placed before the history visit to the login page that follows it."
       ]
     },
     {
@@ -31,8 +32,9 @@
         { "type": "before", "targetEventId": "evt-001-03", "label": "Loading an authenticated login page often precedes session cookies being set." }
       ],
       "hints": [
+        "Think about what normally happens once a user clicks a search result.",
         "A visit to a login page usually comes before related session cookies appear.",
-        "Direct navigation to a portal login page is a common precursor to authentication artefacts."
+        "The history visit to the portal login page should be placed right after the Google search and before the session cookie is created."
       ]
     },
     {
@@ -47,8 +49,9 @@
         { "type": "before", "targetEventId": "evt-001-04", "label": "Successful authentication usually leads to a dashboard or authenticated area." }
       ],
       "hints": [
+        "Think about which artefact is created when a login page finishes loading.",
         "Session cookies are commonly set after a user loads an authenticated page.",
-        "An active session cookie often appears after visiting the page it is tied to."
+        "The PHPSESSID cookie should be placed immediately after the visit to the portal login page and before the dashboard access."
       ]
     },
     {
@@ -62,8 +65,9 @@
         { "type": "before", "targetEventId": "evt-001-05", "label": "A later password reset search suggests a change in account state after dashboard access." }
       ],
       "hints": [
+        "Think about where a user is taken after a login succeeds.",
         "Dashboard access indicates an authenticated session has already been established.",
-        "Successful login is usually followed by access to an authenticated area rather than another login page."
+        "The dashboard visit should be placed right after the session cookie and before the later password reset search."
       ]
     },
     {
@@ -77,8 +81,9 @@
         { "type": "before", "targetEventId": "evt-001-06", "label": "A search for password reset typically precedes opening a reset page." }
       ],
       "hints": [
+        "Think about why a user might revisit credential recovery options hours after logging in.",
         "A password reset search often reflects a changed account state or lost access.",
-        "Searches for credential recovery normally precede attempts to perform a reset."
+        "The password reset search should be placed before the reset page is opened and before the new auth_token cookie is written."
       ]
     },
     {
@@ -92,8 +97,9 @@
         { "type": "before", "targetEventId": "evt-001-07", "label": "Visiting a reset page usually precedes evidence of a successful reset or re-authentication." }
       ],
       "hints": [
+        "Think about which page follows a user clicking a password reset search result.",
         "Password reset pages are usually reached after identifying credential recovery options.",
-        "A reset flow visit often precedes account-level cookie or token changes."
+        "The reset page visit should be placed right after the reset search and immediately before the persistent auth_token cookie is created."
       ]
     },
     {
@@ -107,8 +113,9 @@
         { "type": "after", "targetEventId": "evt-001-06", "label": "A persistent authentication token often appears after a reset page has been completed." }
       ],
       "hints": [
-        "A persistent authentication token indicates the account state was changed or restored.",
-        "New or updated auth cookies are strong indicators of a completed authentication change."
+        "Think about which artefact is produced when a reset flow finishes successfully.",
+        "New or updated auth cookies are strong indicators of a completed authentication change.",
+        "The persistent auth_token cookie should be placed last, immediately after the reset page visit."
       ]
     }
   ]

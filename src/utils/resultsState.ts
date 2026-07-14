@@ -12,6 +12,8 @@ export function isResultsLocationState(
   return (
     typeof state.caseId === 'string' &&
     typeof state.completionTimeMs === 'number' &&
+    typeof state.hintsUsed === 'number' &&
+    typeof state.hintBudget === 'number' &&
     isRecord(result) &&
     typeof result.score === 'number'
   );

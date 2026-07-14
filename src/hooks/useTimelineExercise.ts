@@ -1,6 +1,7 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
+import { HINT_BUDGET } from '../constants/hints';
 import { DND_CONTAINER_IDS } from '../constants/dnd';
 import { getCaseById } from '../data/caseRegistry';
 import type { ForensicEvent, InvestigationCase } from '../types/case';
@@ -26,6 +27,8 @@ export function useTimelineExercise(caseId: string | undefined) {
   const investigationCase = caseId ? getCaseById(caseId) : undefined;
   const startTimeRef = useRef(Date.now());
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
+  const [hintEventId, setHintEventId] = useState<string | null>(null);
+  const [hintsUsed, setHintsUsed] = useState(0);
 
   const eventsById = useMemo<Record<string, ForensicEvent>>(
     () =>
@@ -60,6 +63,21 @@ export function useTimelineExercise(caseId: string | undefined) {
     setActiveEventId(null);
   };
 
+  const handleSelectHintEvent = useCallback((eventId: string | null) => {
+    setHintEventId(eventId);
+  }, []);
+
+  const handleUseHint = useCallback(
+    (eventId: string) => {
+      if (hintsUsed >= HINT_BUDGET) {
+        return;
+      }
+      setHintEventId(eventId);
+      setHintsUsed((count) => Math.min(count + 1, HINT_BUDGET));
+    },
+    [hintsUsed],
+  );
+
   const handleSubmit = () => {
     if (!investigationCase) {
       return;
@@ -76,6 +94,7 @@ export function useTimelineExercise(caseId: string | undefined) {
       score: result.score,
       completionTimeMs,
       completedAt: new Date().toISOString(),
+      hintsUsed,
     });
 
     navigate('/results', {
@@ -83,6 +102,8 @@ export function useTimelineExercise(caseId: string | undefined) {
         result,
         caseId: investigationCase.id,
         completionTimeMs,
+        hintsUsed,
+        hintBudget: HINT_BUDGET,
       },
     });
   };
@@ -97,5 +118,10 @@ export function useTimelineExercise(caseId: string | undefined) {
     handleDragStart,
     handleDragEnd,
     handleSubmit,
+    hintsUsed,
+    hintBudget: HINT_BUDGET,
+    hintEventId,
+    handleSelectHintEvent,
+    handleUseHint,
   };
 }

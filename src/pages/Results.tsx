@@ -24,7 +24,7 @@ export function Results() {
     );
   }
 
-  const { result, caseId, completionTimeMs } = state;
+  const { result, caseId, completionTimeMs, hintsUsed, hintBudget } = state;
   const investigationCase = getCaseById(caseId);
   const nextCaseId = getNextCaseId(caseId);
   const correctFeedback = result.feedback.filter((item) => item.isCorrect);
@@ -50,6 +50,16 @@ export function Results() {
             label="Incorrect Answers"
             value={String(result.incorrectCount)}
             valueClassName="text-rose-600"
+          />
+          <StatCard
+            label="Hints Used"
+            value={`${hintsUsed} / ${hintBudget}`}
+            valueClassName="text-edu-600"
+          />
+          <StatCard
+            label="Hint-Free Bonus"
+            value={hintsUsed === 0 ? 'Earned' : 'Not Earned'}
+            valueClassName={hintsUsed === 0 ? 'text-emerald-600' : 'text-slate-500'}
           />
         </div>
 

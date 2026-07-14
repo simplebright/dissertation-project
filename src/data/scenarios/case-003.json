@@ -16,8 +16,9 @@
         { "type": "before", "targetEventId": "evt-003-05", "label": "Production release review can precede downloading deployment artefacts." }
       ],
       "hints": [
+        "Think about which event usually anchors a deployment-related investigation.",
         "A Jira ticket for a production release may drive related research activity elsewhere.",
-        "Release review often precedes deployment or configuration-related artefacts."
+        "The Chrome Jira ticket visit should be placed first, before any Firefox research activity begins."
       ]
     },
     {
@@ -31,8 +32,9 @@
         { "type": "before", "targetEventId": "evt-003-03", "label": "A technical search commonly leads to the referenced documentation page." }
       ],
       "hints": [
+        "Think about what happens when someone wants to learn a new concept for a ticket.",
         "A technical search often precedes opening the supporting documentation.",
-        "Research activities in a second browser can relate to the primary task in another browser."
+        "The Firefox Kubernetes search should be placed right after the Jira ticket visit and before the docs page is opened."
       ]
     },
     {
@@ -47,8 +49,9 @@
         { "type": "before", "targetEventId": "evt-003-08", "label": "Research activity in Firefox can align with later wiki authentication events." }
       ],
       "hints": [
+        "Think about which page usually appears immediately after a documentation search.",
         "Technical documentation pages often follow focused searches.",
-        "Cross-browser research can provide supporting context for a primary activity in another browser."
+        "The Kubernetes docs page should be placed right after the Firefox search and before the Chrome Jira session cookie is set."
       ]
     },
     {
@@ -63,8 +66,9 @@
         { "type": "before", "targetEventId": "evt-003-05", "label": "An authenticated session often precedes downloading protected artefacts." }
       ],
       "hints": [
+        "Think about which cookie activity reflects returning to a protected application.",
         "Session cookies often indicate an authenticated browser session during deployment review.",
-        "Re-authentication can appear after returning to or reviewing a protected application page."
+        "The Chrome JSESSIONID cookie should be placed right after the Jira ticket visit and before the deploy config download."
       ]
     },
     {
@@ -79,8 +83,9 @@
         { "type": "before", "targetEventId": "evt-003-06", "label": "Downloading a deployment configuration often precedes further deployment checklist research." }
       ],
       "hints": [
+        "Think about which download typically follows after authentication on Jira.",
         "Downloading production configuration is a strong indicator of deployment preparation.",
-        "Protected downloads often require an authenticated session established earlier."
+        "The Chrome deploy config download should be placed right after the JSESSIONID cookie and before the wiki checklist search."
       ]
     },
     {
@@ -94,8 +99,9 @@
         { "type": "before", "targetEventId": "evt-003-07", "label": "A deployment checklist search typically leads to the checklist page." }
       ],
       "hints": [
+        "Think about what a user searches for next when preparing for a deployment.",
         "A deployment checklist search often precedes opening the internal wiki page.",
-        "Internal deployment preparation usually references checklist artefacts before or during deployment."
+        "The Chrome checklist search should be placed right after the deploy config download and right before the wiki checklist page is opened."
       ]
     },
     {
@@ -109,8 +115,9 @@
         { "type": "before", "targetEventId": "evt-003-08", "label": "Checklist access in Chrome can correlate with wiki authentication in Firefox." }
       ],
       "hints": [
+        "Think about which page comes right after a deployment checklist search.",
         "A checklist page visit often represents a direct follow-up to a checklist search.",
-        "Cross-browser wiki access can show parallel or complementary investigation activity."
+        "The Chrome wiki checklist visit should be placed right after the search and before the Firefox wiki session cookie is created."
       ]
     },
     {
@@ -125,8 +132,9 @@
         { "type": "before", "targetEventId": "evt-003-09", "label": "Wiki session cookies often precede further navigation to protected resources." }
       ],
       "hints": [
+        "Think about which cookie activity reflects an authenticated browser session on the wiki.",
         "Wiki session cookies often follow authentication or page access activity.",
-        "Parallel wiki access in Firefox can complement deployment checklist review in Chrome."
+        "The Firefox wiki_session cookie should be placed right after the Chrome wiki visit and before the Firefox Jenkins job page."
       ]
     },
     {
@@ -141,8 +149,9 @@
         { "type": "before", "targetEventId": "evt-003-10", "label": "CI job monitoring often precedes saving or downloading related build artefacts." }
       ],
       "hints": [
+        "Think about which page a developer opens to monitor an in-progress deployment.",
         "Monitoring a CI job often reflects continued deployment investigation.",
-        "CI job pages are commonly visited before related build logs are saved."
+        "The Firefox Jenkins job page should be placed right after the wiki_session cookie and right before the console log download."
       ]
     },
     {
@@ -156,8 +165,9 @@
         { "type": "after", "targetEventId": "evt-003-09", "label": "Saving a console log often follows monitoring the related CI job page." }
       ],
       "hints": [
+        "Think about which artefact a developer might save after watching a CI job run.",
         "Saving a CI console log often follows monitoring the related job page.",
-        "Build logs can preserve evidence of deployment steps after CI investigation."
+        "The Firefox Jenkins console log download should be placed last, immediately after the CI job page visit."
       ]
     }
   ]

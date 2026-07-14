@@ -3,6 +3,7 @@ import { DndProvider } from '../components/dnd/DndProvider';
 import { ExerciseFooter } from '../components/exercise/ExerciseFooter';
 import { ExerciseHeader } from '../components/exercise/ExerciseHeader';
 import { EvidenceCard } from '../components/exercise/EvidenceCard';
+import { HintPanel } from '../components/exercise/HintPanel';
 import { SortableEvidenceList } from '../components/exercise/SortableEvidenceList';
 import { Timeline } from '../components/exercise/Timeline';
 import { EmptyState } from '../components/ui/PageLayout';
@@ -24,6 +25,11 @@ export function TimelineExercise() {
     handleDragStart,
     handleDragEnd,
     handleSubmit,
+    hintsUsed,
+    hintBudget,
+    hintEventId,
+    handleSelectHintEvent,
+    handleUseHint,
   } = useTimelineExercise(caseId);
 
   if (!investigationCase) {
@@ -88,6 +94,15 @@ export function TimelineExercise() {
         </div>
 
         <ExerciseFooter onSubmit={handleSubmit} />
+
+        <HintPanel
+          events={investigationCase.events}
+          totalAvailable={hintBudget}
+          totalUsed={hintsUsed}
+          activeEventId={hintEventId}
+          onSelectEvent={handleSelectHintEvent}
+          onUseHint={handleUseHint}
+        />
       </div>
     </DndProvider>
   );

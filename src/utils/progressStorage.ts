@@ -14,12 +14,21 @@ function isCaseCompletion(value: unknown): value is CaseCompletion {
     return false;
   }
 
-  return (
+  const baseValid =
     typeof value.caseId === 'string' &&
     typeof value.score === 'number' &&
     typeof value.completionTimeMs === 'number' &&
-    typeof value.completedAt === 'string'
-  );
+    typeof value.completedAt === 'string';
+
+  if (!baseValid) {
+    return false;
+  }
+
+  if (value.hintsUsed !== undefined && typeof value.hintsUsed !== 'number') {
+    return false;
+  }
+
+  return true;
 }
 
 function isProgressData(value: unknown): value is ProgressData {
