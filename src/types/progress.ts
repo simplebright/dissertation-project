@@ -1,21 +1,28 @@
-export interface CaseCompletion {
+export interface AttemptRecord {
   caseId: string;
+  mode: 'practice' | 'assessment';
   score: number;
-  completionTimeMs: number;
+  accuracy: number;
+  completionTime: number;
+  hintsUsed: number;
+  mistakes: number;
+  confidence: number;
   completedAt: string;
-  hintsUsed?: number;
 }
 
 export interface ProgressData {
-  completions: CaseCompletion[];
+  attempts: AttemptRecord[];
 }
 
 export interface DashboardStats {
-  completedCases: CaseCompletion[];
+  completedCases: AttemptRecord[];
   completedCount: number;
   totalCases: number;
   averageScore: number;
   highestScore: number;
-  averageCompletionTimeMs: number;
+  averageCompletionTime: number;
+  averageAccuracy: number;
+  averageHintsUsed: number;
+  averageConfidence: number;
   progressPercent: number;
 }

@@ -7,7 +7,8 @@ import { getCaseById } from '../data/caseRegistry';
 import type { ForensicEvent, InvestigationCase } from '../types/case';
 import { checkTimelineAnswer } from '../utils/checkTimelineAnswer';
 import { buildEventsById } from '../utils/events';
-import { saveCaseCompletion } from '../utils/progressStorage';
+import { saveAttempt } from '../utils/progressStorage';
+import type { AttemptRecord } from '../types/progress';
 import { shuffleArray } from '../utils/shuffle';
 import { useContainerDnd } from './useContainerDnd';
 
@@ -100,21 +101,29 @@ export function useTimelineExercise(caseId: string | undefined) {
       containers[DND_CONTAINER_IDS.timeline],
       investigationCase.events,
     );
-    const completionTimeMs = Date.now() - startTimeRef.current;
+    const completionTime = Date.now() - startTimeRef.current;
+    const accuracy = result.score / 100;
+    const mistakes = result.feedback.filter((item) => !item.isCorrect).length;
 
-    saveCaseCompletion({
+    const attempt: AttemptRecord = {
       caseId: investigationCase.id,
+      mode: 'practice',
       score: result.score,
-      completionTimeMs,
-      completedAt: new Date().toISOString(),
+      accuracy,
+      completionTime,
       hintsUsed,
-    });
+      mistakes,
+      confidence: 0,
+      completedAt: new Date().toISOString(),
+    };
+
+    saveAttempt(attempt);
 
     navigate('/results', {
       state: {
         result,
         caseId: investigationCase.id,
-        completionTimeMs,
+        completionTimeMs: completionTime,
         hintsUsed,
         hintBudget: HINT_BUDGET,
       },

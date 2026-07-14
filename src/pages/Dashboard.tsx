@@ -31,7 +31,7 @@ export function Dashboard() {
             label="Average Time"
             value={
               stats.completedCount > 0
-                ? formatDuration(stats.averageCompletionTimeMs)
+                ? formatDuration(stats.averageCompletionTime)
                 : '—'
             }
           />
@@ -58,30 +58,30 @@ export function Dashboard() {
             </p>
           ) : (
             <ul className="mt-4 flex flex-col gap-3" aria-label="Completed cases list">
-              {stats.completedCases.map((completion) => {
-                const investigationCase = getCaseById(completion.caseId);
+              {stats.completedCases.map((attempt) => {
+                const investigationCase = getCaseById(attempt.caseId);
 
                 return (
                   <li
-                    key={completion.caseId}
+                    key={attempt.caseId}
                     className="flex flex-col gap-2 rounded-xl border border-edu-100 bg-edu-50/50 px-4 py-4 transition-all duration-300 hover:border-edu-200 hover:bg-edu-50 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div>
                       <p className="font-medium text-edu-900">
-                        {investigationCase?.title ?? completion.caseId}
+                        {investigationCase?.title ?? attempt.caseId}
                       </p>
                       <p className="text-sm text-slate-500">
-                        <time dateTime={completion.completedAt}>
-                          {new Date(completion.completedAt).toLocaleString('en-GB')}
+                        <time dateTime={attempt.completedAt}>
+                          {new Date(attempt.completedAt).toLocaleString('en-GB')}
                         </time>
                       </p>
                     </div>
                     <div className="flex gap-4 text-sm">
                       <span className="font-semibold text-edu-800">
-                        {completion.score}%
+                        {attempt.score}%
                       </span>
                       <span className="text-slate-600">
-                        {formatDuration(completion.completionTimeMs)}
+                        {formatDuration(attempt.completionTime)}
                       </span>
                     </div>
                   </li>

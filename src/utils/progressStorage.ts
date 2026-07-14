@@ -1,30 +1,31 @@
 import { TOTAL_CASE_COUNT } from '../data/caseRegistry';
 import { PROGRESS_STORAGE_KEY } from '../constants/storage';
 import type {
-  CaseCompletion,
+  AttemptRecord,
   DashboardStats,
   ProgressData,
 } from '../types/progress';
 import { isRecord } from './guards';
 
-const emptyProgress: ProgressData = { completions: [] };
+const emptyProgress: ProgressData = { attempts: [] };
 
-function isCaseCompletion(value: unknown): value is CaseCompletion {
+function isAttemptRecord(value: unknown): value is AttemptRecord {
   if (!isRecord(value)) {
     return false;
   }
 
   const baseValid =
     typeof value.caseId === 'string' &&
+    typeof value.mode === 'string' &&
     typeof value.score === 'number' &&
-    typeof value.completionTimeMs === 'number' &&
+    typeof value.accuracy === 'number' &&
+    typeof value.completionTime === 'number' &&
+    typeof value.hintsUsed === 'number' &&
+    typeof value.mistakes === 'number' &&
+    typeof value.confidence === 'number' &&
     typeof value.completedAt === 'string';
 
   if (!baseValid) {
-    return false;
-  }
-
-  if (value.hintsUsed !== undefined && typeof value.hintsUsed !== 'number') {
     return false;
   }
 
@@ -32,11 +33,63 @@ function isCaseCompletion(value: unknown): value is CaseCompletion {
 }
 
 function isProgressData(value: unknown): value is ProgressData {
-  if (!isRecord(value) || !Array.isArray(value.completions)) {
+  if (!isRecord(value) || !Array.isArray(value.attempts)) {
     return false;
   }
 
-  return value.completions.every(isCaseCompletion);
+  return value.attempts.every(isAttemptRecord);
+}
+
+function toNumber(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+}
+
+function migrateLegacyProgress(stored: unknown): ProgressData {
+  if (isProgressData(stored)) {
+    return stored;
+  }
+
+  if (isRecord(stored) && Array.isArray(stored.completions)) {
+    const attempts: AttemptRecord[] = stored.completions
+      .filter((entry) =>
+        isRecord(entry) &&
+        typeof entry.caseId === 'string' &&
+        typeof entry.score === 'number' &&
+        typeof entry.completionTimeMs === 'number' &&
+        typeof entry.completedAt === 'string',
+      )
+      .map((completion) => {
+        const record = completion as {
+          caseId: string;
+          score: number;
+          completionTimeMs: number;
+          completedAt: string;
+          hintsUsed?: number;
+        };
+
+        const score = toNumber(record.score);
+        const accuracy = Math.min(Math.max(score / 100, 0), 1);
+        const completionTime = toNumber(record.completionTimeMs);
+
+        return {
+          caseId: record.caseId,
+          mode: 'practice',
+          score,
+          accuracy,
+          completionTime,
+          hintsUsed: toNumber(record.hintsUsed),
+          mistakes: 0,
+          confidence: 0,
+          completedAt: record.completedAt,
+        };
+      });
+
+    if (attempts.length > 0) {
+      return { attempts };
+    }
+  }
+
+  return emptyProgress;
 }
 
 export function getProgress(): ProgressData {
@@ -47,34 +100,34 @@ export function getProgress(): ProgressData {
     }
 
     const parsed: unknown = JSON.parse(stored);
-    return isProgressData(parsed) ? parsed : emptyProgress;
+    return migrateLegacyProgress(parsed);
   } catch {
     return emptyProgress;
   }
 }
 
-export function saveCaseCompletion(completion: CaseCompletion): void {
+export function saveAttempt(attempt: AttemptRecord): void {
   const progress = getProgress();
   const updated: ProgressData = {
-    completions: [...progress.completions, completion],
+    attempts: [...progress.attempts, attempt],
   };
 
   localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(updated));
 }
 
-function getLatestCompletionsByCase(
-  completions: CaseCompletion[],
-): CaseCompletion[] {
-  const latestByCase = new Map<string, CaseCompletion>();
+function getLatestAttemptsByCase(
+  attempts: AttemptRecord[],
+): AttemptRecord[] {
+  const latestByCase = new Map<string, AttemptRecord>();
 
-  for (const completion of completions) {
-    const existing = latestByCase.get(completion.caseId);
+  for (const attempt of attempts) {
+    const existing = latestByCase.get(attempt.caseId);
     if (
       !existing ||
-      new Date(completion.completedAt).getTime() >
+      new Date(attempt.completedAt).getTime() >
         new Date(existing.completedAt).getTime()
     ) {
-      latestByCase.set(completion.caseId, completion);
+      latestByCase.set(attempt.caseId, attempt);
     }
   }
 
@@ -85,28 +138,40 @@ function getLatestCompletionsByCase(
 }
 
 export function getDashboardStats(): DashboardStats {
-  const { completions } = getProgress();
-  const completedCases = getLatestCompletionsByCase(completions);
+  const { attempts } = getProgress();
+  const completedCases = getLatestAttemptsByCase(attempts);
   const completedCount = completedCases.length;
 
-  if (completions.length === 0) {
+  if (attempts.length === 0) {
     return {
       completedCases,
       completedCount,
       totalCases: TOTAL_CASE_COUNT,
       averageScore: 0,
       highestScore: 0,
-      averageCompletionTimeMs: 0,
+      averageCompletionTime: 0,
+      averageAccuracy: 0,
+      averageHintsUsed: 0,
+      averageConfidence: 0,
       progressPercent: 0,
     };
   }
 
-  const totalScore = completions.reduce(
-    (sum, completion) => sum + completion.score,
+  const totalScore = attempts.reduce((sum, attempt) => sum + attempt.score, 0);
+  const totalTime = attempts.reduce(
+    (sum, attempt) => sum + attempt.completionTime,
     0,
   );
-  const totalTime = completions.reduce(
-    (sum, completion) => sum + completion.completionTimeMs,
+  const totalAccuracy = attempts.reduce(
+    (sum, attempt) => sum + attempt.accuracy,
+    0,
+  );
+  const totalHints = attempts.reduce(
+    (sum, attempt) => sum + attempt.hintsUsed,
+    0,
+  );
+  const totalConfidence = attempts.reduce(
+    (sum, attempt) => sum + attempt.confidence,
     0,
   );
 
@@ -114,9 +179,12 @@ export function getDashboardStats(): DashboardStats {
     completedCases,
     completedCount,
     totalCases: TOTAL_CASE_COUNT,
-    averageScore: Math.round(totalScore / completions.length),
-    highestScore: Math.max(...completions.map((completion) => completion.score)),
-    averageCompletionTimeMs: Math.round(totalTime / completions.length),
+    averageScore: Math.round(totalScore / attempts.length),
+    highestScore: Math.max(...attempts.map((attempt) => attempt.score)),
+    averageCompletionTime: Math.round(totalTime / attempts.length),
+    averageAccuracy: totalAccuracy / attempts.length,
+    averageHintsUsed: totalHints / attempts.length,
+    averageConfidence: totalConfidence / attempts.length,
     progressPercent: Math.round((completedCount / TOTAL_CASE_COUNT) * 100),
   };
 }
