@@ -30,6 +30,8 @@ export function TimelineExercise() {
     hintEventId,
     handleSelectHintEvent,
     handleUseHint,
+    revealedByEvent,
+    timelineEventIds,
   } = useTimelineExercise(caseId);
 
   if (!investigationCase) {
@@ -102,6 +104,8 @@ export function TimelineExercise() {
           activeEventId={hintEventId}
           onSelectEvent={handleSelectHintEvent}
           onUseHint={handleUseHint}
+          timelineEventIds={timelineEventIds}
+          revealedByEvent={revealedByEvent}
         />
       </div>
     </DndProvider>

@@ -8,6 +8,8 @@ interface HintPanelProps {
   onUseHint: (eventId: string) => void;
   activeEventId: string | null;
   onSelectEvent: (eventId: string | null) => void;
+  timelineEventIds?: string[];
+  revealedByEvent?: Record<string, number>;
 }
 
 export function HintPanel({
@@ -17,13 +19,36 @@ export function HintPanel({
   onUseHint,
   activeEventId,
   onSelectEvent,
+  timelineEventIds,
+  revealedByEvent,
 }: HintPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
   const remaining = Math.max(totalAvailable - totalUsed, 0);
   const budgetExhausted = totalUsed >= totalAvailable;
   const activeEvent = events.find((event) => event.id === activeEventId) ?? null;
   const hintQueue = activeEvent?.hints ?? [];
-  const revealedLevels = hintQueue.slice(0, totalUsed);
+  const revealedCount = activeEvent
+    ? revealedByEvent?.[activeEvent.id] ?? 0
+    : 0;
+  const revealedLevels = hintQueue.slice(0, revealedCount);
+
+  const timelineOrder = timelineEventIds ?? [];
+  const eventsById: Record<string, ForensicEvent> = {};
+  for (const event of events) {
+    eventsById[event.id] = event;
+  }
+
+  const orderedTimelineEvents: { event: ForensicEvent; slot: number }[] = [];
+  for (let index = 0; index < timelineOrder.length; index += 1) {
+    const id = timelineOrder[index];
+    const event = eventsById[id];
+    if (event) {
+      orderedTimelineEvents.push({ event, slot: index + 1 });
+    }
+  }
+
+  const timelineIdSet = new Set(timelineOrder);
+  const evidenceEvents = events.filter((event) => !timelineIdSet.has(event.id));
 
   const handleOpen = () => {
     if (budgetExhausted) {
@@ -99,12 +124,45 @@ export function HintPanel({
                 className="mt-1 w-full rounded-lg border border-edu-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-edu-500"
               >
                 <option value="">Select an event…</option>
-                {events.map((event, index) => (
-                  <option key={event.id} value={event.id}>
-                    Event {index + 1} — {event.type}
+                {timelineEventIds && timelineEventIds.length > 0 && (
+                  <optgroup label="On timeline">
+                    {orderedTimelineEvents.map(({ event, slot }) => {
+                      const revealed = revealedByEvent?.[event.id] ?? 0;
+                      return (
+                        <option key={event.id} value={event.id}>
+                          Slot {slot} — {event.type}
+                          {revealed > 0 ? ` (${revealed}/3)` : ''}
+                        </option>
+                      );
+                    })}
+                  </optgroup>
+                )}
+                {evidenceEvents.length > 0 && (
+                  <optgroup label="In evidence">
+                    {evidenceEvents.map((event) => {
+                      const revealed = revealedByEvent?.[event.id] ?? 0;
+                      return (
+                        <option key={event.id} value={event.id}>
+                          {event.type}
+                          {revealed > 0 ? ` (${revealed}/3)` : ''}
+                        </option>
+                      );
+                    })}
+                  </optgroup>
+                )}
+                {!timelineEventIds && (
+                  <option value="" disabled>
+                    Place an event on the timeline first
                   </option>
-                ))}
+                )}
               </select>
+              {timelineEventIds &&
+                timelineEventIds.length === 0 &&
+                evidenceEvents.length > 0 && (
+                  <p className="mt-1 text-xs text-slate-500">
+                    Drag an event onto the timeline to slot it.
+                  </p>
+                )}
             </div>
 
             <div
@@ -134,13 +192,19 @@ export function HintPanel({
             <button
               type="button"
               onClick={handleRevealNext}
-              disabled={!activeEvent || budgetExhausted}
+              disabled={
+                !activeEvent ||
+                budgetExhausted ||
+                revealedCount >= hintQueue.length
+              }
               className="inline-flex w-full items-center justify-center rounded-xl bg-edu-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-900/15 transition-all duration-300 hover:bg-edu-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-edu-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {activeEvent
                 ? budgetExhausted
                   ? 'No hints remaining'
-                  : `Reveal hint level ${revealedLevels.length + 1}`
+                  : revealedCount >= hintQueue.length
+                    ? 'All levels revealed'
+                    : `Reveal hint level ${revealedCount + 1}`
                 : 'Select an event first'}
             </button>
           </div>

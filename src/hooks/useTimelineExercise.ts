@@ -29,6 +29,9 @@ export function useTimelineExercise(caseId: string | undefined) {
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const [hintEventId, setHintEventId] = useState<string | null>(null);
   const [hintsUsed, setHintsUsed] = useState(0);
+  const [revealedByEvent, setRevealedByEvent] = useState<
+    Record<string, number>
+  >({});
 
   const eventsById = useMemo<Record<string, ForensicEvent>>(
     () =>
@@ -72,10 +75,20 @@ export function useTimelineExercise(caseId: string | undefined) {
       if (hintsUsed >= HINT_BUDGET) {
         return;
       }
+      const event = investigationCase?.events.find((e) => e.id === eventId);
+      const totalLevels = event?.hints?.length ?? 0;
+      const currentRevealed = revealedByEvent[eventId] ?? 0;
+      if (totalLevels > 0 && currentRevealed >= totalLevels) {
+        return;
+      }
       setHintEventId(eventId);
       setHintsUsed((count) => Math.min(count + 1, HINT_BUDGET));
+      setRevealedByEvent((prev) => ({
+        ...prev,
+        [eventId]: Math.min(currentRevealed + 1, totalLevels),
+      }));
     },
-    [hintsUsed],
+    [hintsUsed, investigationCase, revealedByEvent],
   );
 
   const handleSubmit = () => {
@@ -123,5 +136,7 @@ export function useTimelineExercise(caseId: string | undefined) {
     hintEventId,
     handleSelectHintEvent,
     handleUseHint,
+    revealedByEvent,
+    timelineEventIds: containers[DND_CONTAINER_IDS.timeline],
   };
 }
