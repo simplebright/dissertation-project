@@ -22,6 +22,10 @@ function formatImprovement(delta: number | null): string {
   return `${delta}%`;
 }
 
+function formatConfidence(value: number | null): string {
+  return value === null ? '—' : `${value.toFixed(2)} / 3`;
+}
+
 export function Dashboard() {
   const stats = useMemo(() => getDashboardStats(), []);
   const history = useMemo(() => getAttemptHistory(), []);
@@ -76,7 +80,7 @@ export function Dashboard() {
               </p>
             </Card>
           ) : (
-            <div className="mt-4 grid gap-4 sm:grid-cols-3">
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <StatCard
                 label="Average Score"
                 value={`${insights.averageScore}%`}
@@ -113,6 +117,18 @@ export function Dashboard() {
                     ))}
                   </ul>
                 )}
+              </Card>
+              <Card>
+                <p className="text-sm font-medium text-slate-500">
+                  Average Confidence
+                </p>
+                <p className="mt-2 text-3xl font-bold text-edu-800">
+                  {formatConfidence(insights.averageConfidence)}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Based on {insights.ratedAttemptCount} rated attempt
+                  {insights.ratedAttemptCount === 1 ? '' : 's'}
+                </p>
               </Card>
             </div>
           )}

@@ -11,6 +11,17 @@ export interface AttemptRecord {
   mistakeDetails?: import('./mistake').MistakeRecord[];
 }
 
+export type ConfidenceLevel = 1 | 2 | 3;
+
+export const CONFIDENCE_OPTIONS: {
+  value: ConfidenceLevel;
+  label: string;
+}[] = [
+  { value: 1, label: 'Guessing' },
+  { value: 2, label: 'Somewhat confident' },
+  { value: 3, label: 'Very confident' },
+];
+
 export interface ProgressData {
   attempts: AttemptRecord[];
 }
@@ -42,4 +53,6 @@ export interface LearningInsights {
   mostCommonMistakes: { category: string; count: number }[];
   averageScore: number;
   improvementDelta: number | null;
+  averageConfidence: number | null;
+  ratedAttemptCount: number;
 }

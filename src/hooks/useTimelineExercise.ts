@@ -127,6 +127,7 @@ export function useTimelineExercise(caseId: string | undefined) {
         hintsUsed,
         hintBudget: HINT_BUDGET,
         mistakes: result.mistakes,
+        completedAt: attempt.completedAt,
       },
     });
   };

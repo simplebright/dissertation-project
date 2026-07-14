@@ -8,4 +8,5 @@ export interface ResultsLocationState {
   hintsUsed: number;
   hintBudget: number;
   mistakes: MistakeRecord[];
+  completedAt: string;
 }

@@ -118,6 +118,36 @@ export function saveAttempt(attempt: AttemptRecord): void {
   localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(updated));
 }
 
+export function updateAttemptConfidence(
+  caseId: string,
+  completedAt: string,
+  confidence: number,
+): AttemptRecord | undefined {
+  const progress = getProgress();
+  let updatedAttempt: AttemptRecord | undefined;
+
+  const updatedAttempts = progress.attempts.map((attempt) => {
+    if (
+      attempt.caseId === caseId &&
+      attempt.completedAt === completedAt &&
+      attempt.confidence === 0
+    ) {
+      updatedAttempt = { ...attempt, confidence };
+      return updatedAttempt;
+    }
+    return attempt;
+  });
+
+  if (updatedAttempt) {
+    localStorage.setItem(
+      PROGRESS_STORAGE_KEY,
+      JSON.stringify({ attempts: updatedAttempts }),
+    );
+  }
+
+  return updatedAttempt;
+}
+
 function getLatestAttemptsByCase(
   attempts: AttemptRecord[],
 ): AttemptRecord[] {
@@ -219,6 +249,8 @@ export function getLearningInsights(): LearningInsights {
       mostCommonMistakes: [],
       averageScore: 0,
       improvementDelta: null,
+      averageConfidence: null,
+      ratedAttemptCount: 0,
     };
   }
 
@@ -266,9 +298,24 @@ export function getLearningInsights(): LearningInsights {
     improvementDelta = Math.round(secondAvg - firstAvg);
   }
 
+  const ratedAttempts = attempts.filter((attempt) => attempt.confidence > 0);
+  const averageConfidence =
+    ratedAttempts.length > 0
+      ? Number(
+          (
+            ratedAttempts.reduce(
+              (sum, attempt) => sum + attempt.confidence,
+              0,
+            ) / ratedAttempts.length
+          ).toFixed(2),
+        )
+      : null;
+
   return {
     mostCommonMistakes,
     averageScore,
     improvementDelta,
+    averageConfidence,
+    ratedAttemptCount: ratedAttempts.length,
   };
 }
