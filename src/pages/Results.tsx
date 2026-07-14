@@ -3,6 +3,7 @@ import { getCaseById, getNextCaseId } from '../data/caseRegistry';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { FeedbackList } from '../components/ui/FeedbackList';
+import { MistakeList } from '../components/ui/MistakeList';
 import { EmptyState, PageActions } from '../components/ui/PageLayout';
 import { PageHeader } from '../components/ui/PageHeader';
 import { StatCard } from '../components/ui/StatCard';
@@ -24,7 +25,7 @@ export function Results() {
     );
   }
 
-  const { result, caseId, completionTimeMs, hintsUsed, hintBudget } = state;
+  const { result, caseId, completionTimeMs, hintsUsed, hintBudget, mistakes } = state;
   const investigationCase = getCaseById(caseId);
   const nextCaseId = getNextCaseId(caseId);
   const correctFeedback = result.feedback.filter((item) => item.isCorrect);
@@ -80,6 +81,12 @@ export function Results() {
             items={incorrectFeedback}
             variant="incorrect"
             ariaLabel="Incorrect answers feedback"
+          />
+          <MistakeList
+            title="Mistake Analysis"
+            items={mistakes}
+            variant="incorrect"
+            ariaLabel="Mistake analysis"
           />
         </Card>
 

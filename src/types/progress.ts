@@ -8,6 +8,7 @@ export interface AttemptRecord {
   mistakes: number;
   confidence: number;
   completedAt: string;
+  mistakeDetails?: import('./mistake').MistakeRecord[];
 }
 
 export interface ProgressData {

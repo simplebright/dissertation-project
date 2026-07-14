@@ -103,7 +103,6 @@ export function useTimelineExercise(caseId: string | undefined) {
     );
     const completionTime = Date.now() - startTimeRef.current;
     const accuracy = result.score / 100;
-    const mistakes = result.feedback.filter((item) => !item.isCorrect).length;
 
     const attempt: AttemptRecord = {
       caseId: investigationCase.id,
@@ -112,9 +111,10 @@ export function useTimelineExercise(caseId: string | undefined) {
       accuracy,
       completionTime,
       hintsUsed,
-      mistakes,
+      mistakes: result.mistakes.length,
       confidence: 0,
       completedAt: new Date().toISOString(),
+      mistakeDetails: result.mistakes,
     };
 
     saveAttempt(attempt);
@@ -126,6 +126,7 @@ export function useTimelineExercise(caseId: string | undefined) {
         completionTimeMs: completionTime,
         hintsUsed,
         hintBudget: HINT_BUDGET,
+        mistakes: result.mistakes,
       },
     });
   };

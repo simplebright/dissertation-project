@@ -15,4 +15,5 @@ export interface TimelineAnswerResult {
   isComplete: boolean;
   feedback: PositionFeedback[];
   summary: string;
+  mistakes: import('./mistake').MistakeRecord[];
 }

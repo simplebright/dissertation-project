@@ -1,5 +1,9 @@
 import type { ForensicEvent } from '../types/case';
-import type { PositionFeedback, TimelineAnswerResult } from '../types/timeline';
+import type { MistakeRecord } from '../types/mistake';
+import type {
+  PositionFeedback,
+  TimelineAnswerResult,
+} from '../types/timeline';
 import { buildEventsById } from './events';
 
 export function getCorrectOrder(events: ForensicEvent[]): string[] {
@@ -117,6 +121,132 @@ function buildPositionFeedback(
   };
 }
 
+function categorizePlacement(
+  actualEvent: ForensicEvent,
+  expectedEvent: ForensicEvent,
+  position: number,
+): MistakeRecord['category'] {
+  if (actualEvent.correctOrder > position) {
+    return 'placed too early';
+  }
+  if (actualEvent.correctOrder < position) {
+    return 'placed too late';
+  }
+  if (actualEvent.type !== expectedEvent.type) {
+    return 'event type mismatch';
+  }
+  return 'event ordering';
+}
+
+function buildMistakeMessage(
+  category: MistakeRecord['category'],
+  actualEvent: ForensicEvent | undefined,
+  expectedEvent: ForensicEvent,
+  position: number,
+): string {
+  switch (category) {
+    case 'placed too early':
+      return actualEvent
+        ? `Position ${position} is too early for "${actualEvent.description}". It should appear at step ${actualEvent.correctOrder}.`
+        : `An event at position ${position} was placed too early.`;
+    case 'placed too late':
+      return actualEvent
+        ? `Position ${position} is too late for "${actualEvent.description}". It should appear at step ${actualEvent.correctOrder}.`
+        : `An event at position ${position} was placed too late.`;
+    case 'event type mismatch':
+      return actualEvent
+        ? `Position ${position} expects a ${expectedEvent.type} event but received a ${actualEvent.type} event ("${actualEvent.description}").`
+        : `Position ${position} expects a ${expectedEvent.type} event.`;
+    case 'empty slot':
+      return `Position ${position} is empty. Step ${position} should be "${expectedEvent.description}".`;
+    default:
+      return actualEvent
+        ? `Event "${actualEvent.description}" is out of order. The expected event at position ${position} is "${expectedEvent.description}".`
+        : `Event ordering is incorrect at position ${position}.`;
+  }
+}
+
+function typeSequencingLabel(type: string): MistakeRecord['category'] {
+  switch (type) {
+    case 'download':
+      return 'download sequencing';
+    case 'search':
+      return 'search sequencing';
+    case 'cookie':
+      return 'cookie sequencing';
+    case 'history':
+      return 'history sequencing';
+    default:
+      return 'event ordering';
+  }
+}
+
+function buildMistakeRecords(
+  feedback: PositionFeedback[],
+  eventsById: Record<string, ForensicEvent>,
+): MistakeRecord[] {
+  const mistakes: MistakeRecord[] = [];
+
+  for (const item of feedback) {
+    if (item.isCorrect) {
+      continue;
+    }
+
+    const expectedEvent = eventsById[item.expectedEventId];
+    const actualEvent =
+      item.placedEventId !== null ? eventsById[item.placedEventId] : undefined;
+
+    if (!expectedEvent) {
+      continue;
+    }
+
+    if (item.placedEventId === null) {
+      mistakes.push({
+        eventId: expectedEvent.id,
+        position: item.position,
+        expectedEventId: expectedEvent.id,
+        category: 'empty slot',
+        message: buildMistakeMessage(
+          'empty slot',
+          undefined,
+          expectedEvent,
+          item.position,
+        ),
+      });
+      continue;
+    }
+
+    if (!actualEvent) {
+      continue;
+    }
+
+    const placementCategory = categorizePlacement(
+      actualEvent,
+      expectedEvent,
+      item.position,
+    );
+
+    const typeCategory = typeSequencingLabel(actualEvent.type);
+    const category: MistakeRecord['category'] =
+      placementCategory === 'event ordering' ? typeCategory : placementCategory;
+
+    mistakes.push({
+      eventId: actualEvent.id,
+      position: item.position,
+      expectedEventId: expectedEvent.id,
+      category,
+      message: buildMistakeMessage(
+        category,
+        actualEvent,
+        expectedEvent,
+        item.position,
+      ),
+    });
+  }
+
+  return mistakes;
+}
+
 export function checkTimelineAnswer(
   currentOrder: string[],
   events: ForensicEvent[],
@@ -139,6 +269,7 @@ export function checkTimelineAnswer(
   const incorrectCount = totalCount - correctCount;
   const score =
     totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+  const mistakes = buildMistakeRecords(feedback, eventsById);
 
   return {
     score,
@@ -148,5 +279,6 @@ export function checkTimelineAnswer(
     isComplete,
     feedback,
     summary: generateSummary(score, correctCount, totalCount, isComplete),
+    mistakes,
   };
 }
