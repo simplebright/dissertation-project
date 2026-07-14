@@ -1,8 +1,11 @@
 import { TOTAL_CASE_COUNT } from '../data/caseRegistry';
+import { getCaseById } from '../data/caseRegistry';
 import { PROGRESS_STORAGE_KEY } from '../constants/storage';
 import type {
+  AttemptHistoryEntry,
   AttemptRecord,
   DashboardStats,
+  LearningInsights,
   ProgressData,
 } from '../types/progress';
 import { isRecord } from './guards';
@@ -186,5 +189,86 @@ export function getDashboardStats(): DashboardStats {
     averageHintsUsed: totalHints / attempts.length,
     averageConfidence: totalConfidence / attempts.length,
     progressPercent: Math.round((completedCount / TOTAL_CASE_COUNT) * 100),
+  };
+}
+
+export function getAttemptHistory(): AttemptHistoryEntry[] {
+  const { attempts } = getProgress();
+
+  return [...attempts]
+    .sort(
+      (a, b) =>
+        new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime(),
+    )
+    .map((attempt, index) => ({
+      attemptId: `${attempt.caseId}-${new Date(attempt.completedAt).getTime()}-${index}`,
+      caseId: attempt.caseId,
+      caseTitle: getCaseById(attempt.caseId)?.title ?? attempt.caseId,
+      mode: attempt.mode,
+      score: attempt.score,
+      completionTime: attempt.completionTime,
+      completedAt: attempt.completedAt,
+    }));
+}
+
+export function getLearningInsights(): LearningInsights {
+  const { attempts } = getProgress();
+
+  if (attempts.length === 0) {
+    return {
+      mostCommonMistakes: [],
+      averageScore: 0,
+      improvementDelta: null,
+    };
+  }
+
+  const categoryCounts = new Map<string, number>();
+  for (const attempt of attempts) {
+    const details = attempt.mistakeDetails;
+    if (!Array.isArray(details)) {
+      continue;
+    }
+    for (const detail of details) {
+      if (isRecord(detail) && typeof detail.category === 'string') {
+        categoryCounts.set(
+          detail.category,
+          (categoryCounts.get(detail.category) ?? 0) + 1,
+        );
+      }
+    }
+  }
+
+  const mostCommonMistakes = Array.from(categoryCounts.entries())
+    .map(([category, count]) => ({ category, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  const totalScore = attempts.reduce((sum, attempt) => sum + attempt.score, 0);
+  const averageScore = Math.round(totalScore / attempts.length);
+
+  const sortedByDate = [...attempts].sort(
+    (a, b) =>
+      new Date(a.completedAt).getTime() - new Date(b.completedAt).getTime(),
+  );
+
+  const half = Math.max(1, Math.floor(sortedByDate.length / 2));
+  const firstHalf = sortedByDate.slice(0, half);
+  const secondHalf = sortedByDate.slice(half);
+
+  let improvementDelta: number | null = null;
+  if (secondHalf.length > 0) {
+    const firstAvg =
+      firstHalf.reduce((sum, attempt) => sum + attempt.score, 0) /
+      firstHalf.length;
+    const secondAvg =
+      secondHalf.reduce((sum, attempt) => sum + attempt.score, 0) /
+      secondHalf.length;
+    improvementDelta = Math.round(secondAvg - firstAvg);
+  }
+
+  return {
+    mostCommonMistakes,
+    averageScore,
+    improvementDelta,
   };
 }

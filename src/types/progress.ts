@@ -27,3 +27,19 @@ export interface DashboardStats {
   averageConfidence: number;
   progressPercent: number;
 }
+
+export interface AttemptHistoryEntry {
+  attemptId: string;
+  caseId: string;
+  caseTitle: string;
+  mode: AttemptRecord['mode'];
+  score: number;
+  completionTime: number;
+  completedAt: string;
+}
+
+export interface LearningInsights {
+  mostCommonMistakes: { category: string; count: number }[];
+  averageScore: number;
+  improvementDelta: number | null;
+}
