@@ -6,11 +6,11 @@
   --color-edu-100: #dbeafe;
   --color-edu-200: #bfdbfe;
   --color-edu-300: #93c5fd;
-  --color-edu-500: #3b82f6;
-  --color-edu-600: #2563eb;
-  --color-edu-700: #1d4ed8;
-  --color-edu-800: #1e40af;
-  --color-edu-900: #1e3a8a;
+  --color-edu-500: #6366f1;
+  --color-edu-600: #4f46e5;
+  --color-edu-700: #4338ca;
+  --color-edu-800: #3730a3;
+  --color-edu-900: #312e81;
 }
 
 @layer base {
@@ -20,6 +20,10 @@
 
   body {
     @apply bg-edu-50 font-sans text-slate-800 antialiased;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(99, 102, 241, 0.08), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(59, 130, 246, 0.06), transparent 45%);
+    background-attachment: fixed;
   }
 
   *:focus-visible {
@@ -43,22 +47,22 @@
 
 @layer components {
   .edu-page {
-    @apply min-h-screen bg-gradient-to-b from-edu-50 via-blue-50/60 to-white px-4 py-10 sm:px-6 sm:py-12;
+    @apply min-h-screen bg-gradient-to-b from-white via-edu-50 to-indigo-50/60 px-4 py-10 sm:px-6 sm:py-12;
   }
 
   .edu-card {
-    @apply rounded-2xl border border-edu-100 bg-white shadow-md shadow-blue-900/5 transition-all duration-300 ease-out;
+    @apply rounded-3xl border border-edu-100/80 bg-white/90 shadow-lg shadow-indigo-900/5 backdrop-blur-sm transition-all duration-300 ease-out;
   }
 
   .edu-card-hover {
-    @apply hover:-translate-y-0.5 hover:border-edu-200 hover:shadow-lg hover:shadow-blue-900/10;
+    @apply hover:-translate-y-1 hover:scale-[1.005] hover:border-edu-200 hover:shadow-xl hover:shadow-indigo-900/10;
   }
 
   .edu-section-title {
-    @apply text-lg font-semibold text-edu-900;
+    @apply text-lg font-semibold tracking-tight text-edu-900;
   }
 
   .edu-label {
-    @apply text-sm font-medium uppercase tracking-widest text-edu-600;
+    @apply text-xs font-semibold uppercase tracking-[0.2em] text-edu-600/80;
   }
 }
