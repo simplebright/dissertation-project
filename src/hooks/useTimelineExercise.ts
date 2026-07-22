@@ -6,6 +6,7 @@ import { DND_CONTAINER_IDS } from '../constants/dnd';
 import { getCaseById } from '../data/caseRegistry';
 import type { ForensicEvent, InvestigationCase } from '../types/case';
 import { checkTimelineAnswer } from '../utils/checkTimelineAnswer';
+import { evaluateEvidenceSelection } from '../utils/evaluateEvidenceSelection';
 import { buildEventsById } from '../utils/events';
 import { saveAttempt } from '../utils/progressStorage';
 import type { AttemptRecord } from '../types/progress';
@@ -123,6 +124,10 @@ export function useTimelineExercise(
       containers[DND_CONTAINER_IDS.timeline],
       selectedEvents,
     );
+    const selection = evaluateEvidenceSelection(
+      selectedEvidenceIds ?? [],
+      investigationCase.events,
+    );
     const completionTime = Date.now() - startTimeRef.current;
     const accuracy = result.score / 100;
 
@@ -144,6 +149,7 @@ export function useTimelineExercise(
     navigate('/results', {
       state: {
         result,
+        selection,
         caseId: investigationCase.id,
         completionTimeMs: completionTime,
         hintsUsed,

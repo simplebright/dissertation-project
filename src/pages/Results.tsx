@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { getCaseById, getNextCaseId } from '../data/caseRegistry';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { EvidenceSelectionFeedback } from '../components/exercise/EvidenceSelectionFeedback';
 import { FeedbackList } from '../components/ui/FeedbackList';
 import { MistakeList } from '../components/ui/MistakeList';
 import { EmptyState, PageActions } from '../components/ui/PageLayout';
@@ -29,7 +30,16 @@ export function Results() {
     );
   }
 
-  const { result, caseId, completionTimeMs, hintsUsed, hintBudget, mistakes, completedAt } = state;
+  const {
+    result,
+    selection,
+    caseId,
+    completionTimeMs,
+    hintsUsed,
+    hintBudget,
+    mistakes,
+    completedAt,
+  } = state;
   const investigationCase = getCaseById(caseId);
   const nextCaseId = getNextCaseId(caseId);
   const correctFeedback = result.feedback.filter((item) => item.isCorrect);
@@ -46,32 +56,161 @@ export function Results() {
         <PageHeader
           label="Exercise Results"
           title={investigationCase?.title ?? 'Timeline Results'}
+          description="Your submission is evaluated in two independent stages — evidence selection and timeline ordering — each measuring a separate competency."
         />
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2">
-          <StatCard label="Score" value={`${result.score}%`} />
-          <StatCard label="Completion Time" value={formatDuration(completionTimeMs)} />
-          <StatCard
-            label="Correct Answers"
-            value={String(result.correctCount)}
-            valueClassName="text-emerald-600"
+        <Card as="section" className="mt-8" aria-labelledby="stage1-heading">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-edu-600">
+                Stage 1
+              </p>
+              <h2
+                id="stage1-heading"
+                className="edu-section-title mt-1 mb-0"
+              >
+                Evidence Selection
+              </h2>
+            </div>
+            <span className="rounded-full bg-edu-100 px-3 py-1 text-xs font-semibold text-edu-800">
+              Independent score
+            </span>
+          </div>
+          <p className="mt-3 leading-relaxed text-slate-700">
+            {selection.summary}
+          </p>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <StatCard
+              label="Selection Accuracy"
+              value={`${selection.accuracy}%`}
+              valueClassName={
+                selection.accuracy === 100
+                  ? 'text-emerald-600'
+                  : selection.accuracy >= 70
+                    ? 'text-edu-600'
+                    : 'text-rose-600'
+              }
+            />
+            <StatCard
+              label="Correctly Selected"
+              value={`${selection.truePositiveCount} / ${selection.totalRelevant}`}
+              valueClassName="text-emerald-600"
+            />
+            <StatCard
+              label="False Positives"
+              value={String(selection.falsePositiveCount)}
+              valueClassName={
+                selection.falsePositiveCount === 0
+                  ? 'text-emerald-600'
+                  : 'text-rose-600'
+              }
+            />
+            <StatCard
+              label="False Negatives"
+              value={String(selection.falseNegativeCount)}
+              valueClassName={
+                selection.falseNegativeCount === 0
+                  ? 'text-emerald-600'
+                  : 'text-rose-600'
+              }
+            />
+          </div>
+
+          <EvidenceSelectionFeedback
+            title="Correctly Selected Evidence"
+            items={selection.correctlySelectedEvents}
+            emptyMessage="No events were correctly identified as relevant."
+            variant="correct"
+            ariaLabel="Correctly selected evidence"
           />
-          <StatCard
-            label="Incorrect Answers"
-            value={String(result.incorrectCount)}
-            valueClassName="text-rose-600"
+          <EvidenceSelectionFeedback
+            title="False Positives (selected but not relevant)"
+            items={selection.falsePositiveEvents}
+            emptyMessage="No false positives — every selected event was genuinely relevant."
+            variant="incorrect"
+            ariaLabel="False positive evidence"
           />
-          <StatCard
-            label="Hints Used"
-            value={`${hintsUsed} / ${hintBudget}`}
-            valueClassName="text-edu-600"
+          <EvidenceSelectionFeedback
+            title="False Negatives (missed relevant evidence)"
+            items={selection.falseNegativeEvents}
+            emptyMessage="No false negatives — every relevant event was selected."
+            variant="incorrect"
+            ariaLabel="False negative evidence"
           />
-          <StatCard
-            label="Hint-Free Bonus"
-            value={hintsUsed === 0 ? 'Earned' : 'Not Earned'}
-            valueClassName={hintsUsed === 0 ? 'text-emerald-600' : 'text-slate-500'}
+        </Card>
+
+        <Card as="section" className="mt-8" aria-labelledby="stage2-heading">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-edu-600">
+                Stage 2
+              </p>
+              <h2
+                id="stage2-heading"
+                className="edu-section-title mt-1 mb-0"
+              >
+                Timeline Ordering
+              </h2>
+            </div>
+            <span className="rounded-full bg-edu-100 px-3 py-1 text-xs font-semibold text-edu-800">
+              Independent score
+            </span>
+          </div>
+          <p className="mt-3 leading-relaxed text-slate-700">
+            {result.summary}
+          </p>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <StatCard
+              label="Ordering Score"
+              value={`${result.score}%`}
+            />
+            <StatCard
+              label="Completion Time"
+              value={formatDuration(completionTimeMs)}
+            />
+            <StatCard
+              label="Correct Positions"
+              value={String(result.correctCount)}
+              valueClassName="text-emerald-600"
+            />
+            <StatCard
+              label="Incorrect Positions"
+              value={String(result.incorrectCount)}
+              valueClassName="text-rose-600"
+            />
+            <StatCard
+              label="Hints Used"
+              value={`${hintsUsed} / ${hintBudget}`}
+              valueClassName="text-edu-600"
+            />
+            <StatCard
+              label="Hint-Free Bonus"
+              value={hintsUsed === 0 ? 'Earned' : 'Not Earned'}
+              valueClassName={hintsUsed === 0 ? 'text-emerald-600' : 'text-slate-500'}
+            />
+          </div>
+
+          <FeedbackList
+            title="Correct Positions"
+            items={correctFeedback}
+            variant="correct"
+            ariaLabel="Correct positions feedback"
           />
-        </div>
+          <FeedbackList
+            title="Incorrect Positions"
+            items={incorrectFeedback}
+            variant="incorrect"
+            ariaLabel="Incorrect positions feedback"
+          />
+          <MistakeList
+            title="Mistake Analysis"
+            items={mistakes}
+            variant="incorrect"
+            ariaLabel="Mistake analysis"
+          />
+        </Card>
 
         <Card as="section" className="mt-8" aria-labelledby="confidence-heading">
           <h2 id="confidence-heading" className="edu-section-title">
@@ -115,32 +254,6 @@ export function Results() {
               Thanks — your confidence rating was saved.
             </p>
           )}
-        </Card>
-
-        <Card as="section" className="mt-8" aria-labelledby="feedback-heading">
-          <h2 id="feedback-heading" className="edu-section-title">
-            Learning Feedback
-          </h2>
-          <p className="mt-3 leading-relaxed text-slate-700">{result.summary}</p>
-
-          <FeedbackList
-            title="Correct"
-            items={correctFeedback}
-            variant="correct"
-            ariaLabel="Correct answers feedback"
-          />
-          <FeedbackList
-            title="Incorrect"
-            items={incorrectFeedback}
-            variant="incorrect"
-            ariaLabel="Incorrect answers feedback"
-          />
-          <MistakeList
-            title="Mistake Analysis"
-            items={mistakes}
-            variant="incorrect"
-            ariaLabel="Mistake analysis"
-          />
         </Card>
 
         <PageActions>
