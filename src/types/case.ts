@@ -28,6 +28,7 @@ export interface CaseSummary {
   title: string;
   difficulty: Difficulty;
   description: string;
+  investigationObjective: string;
 }
 
 export interface InvestigationCase extends CaseSummary {

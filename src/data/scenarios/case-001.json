@@ -3,6 +3,7 @@
   "title": "Suspicious Login Activity",
   "difficulty": "Beginner",
   "description": "A student account shows unexpected logins from unfamiliar locations. Reconstruct the browser timeline to identify when and how the sessions occurred.",
+  "investigationObjective": "Learn to identify authentication artefacts (session cookies) and recognise the temporal patterns of credential compromise by sequencing login, session creation, and password reset events.",
   "events": [
     {
       "id": "evt-001-01",

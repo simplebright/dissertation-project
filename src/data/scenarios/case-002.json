@@ -3,6 +3,7 @@
   "title": "Unauthorized File Download",
   "difficulty": "Intermediate",
   "description": "Sensitive documents were accessed from a shared workstation. Analyse browsing history and download artefacts to determine the sequence of events.",
+  "investigationObjective": "Develop skills in correlating authentication artefacts with file access events and recognising the investigative significance of download history as potential exfiltration indicators.",
   "events": [
     {
       "id": "evt-002-01",

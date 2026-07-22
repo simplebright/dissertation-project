@@ -3,6 +3,7 @@
   "title": "Cross-Browser Activity Correlation",
   "difficulty": "Advanced",
   "description": "Evidence spans Chrome and Firefox profiles on the same machine. Build a unified timeline to correlate visits, searches, and tab activity across browsers.",
+  "investigationObjective": "Build expertise in cross-browser correlation techniques by integrating artefacts from multiple browser profiles to reconstruct a unified investigative timeline.",
   "events": [
     {
       "id": "evt-003-01",
