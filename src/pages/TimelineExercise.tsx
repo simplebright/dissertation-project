@@ -17,8 +17,11 @@ export function TimelineExercise() {
   const exerciseState = isExerciseLocationState(location.state)
     ? location.state
     : undefined;
+  const selectedEvidenceIds = exerciseState?.selectedEvidenceIds;
+  const hasSelection = (selectedEvidenceIds?.length ?? 0) > 0;
   const {
     investigationCase,
+    selectedEvents,
     eventsById,
     containers,
     activeEvent,
@@ -32,7 +35,7 @@ export function TimelineExercise() {
     handleUseHint,
     revealedByEvent,
     timelineEventIds,
-  } = useTimelineExercise(caseId);
+  } = useTimelineExercise(caseId, selectedEvidenceIds);
 
   if (!investigationCase) {
     return (
@@ -45,8 +48,8 @@ export function TimelineExercise() {
     );
   }
 
-  if (!exerciseState) {
-    return <Navigate to={`/exercise/${caseId}/mode`} replace />;
+  if (!exerciseState || !hasSelection) {
+    return <Navigate to={`/exercise/${caseId}/evidence`} replace />;
   }
 
   const exerciseMode = exerciseState?.mode ?? 'beginner';
@@ -81,6 +84,7 @@ export function TimelineExercise() {
               title="Evidence"
               emptyMessage="All evidence placed on timeline"
               showTimestamp={showTimestamp}
+              mode={exerciseMode}
             />
           </aside>
 
@@ -89,8 +93,9 @@ export function TimelineExercise() {
               containerId={DND_CONTAINER_IDS.timeline}
               itemIds={containers[DND_CONTAINER_IDS.timeline]}
               eventsById={eventsById}
-              slotCount={investigationCase.events.length}
+              slotCount={selectedEvents.length}
               showTimestamp={showTimestamp}
+              mode={exerciseMode}
             />
           </section>
         </div>
@@ -98,7 +103,7 @@ export function TimelineExercise() {
         <ExerciseFooter onSubmit={handleSubmit} />
 
         <HintPanel
-          events={investigationCase.events}
+          events={selectedEvents}
           totalAvailable={hintBudget}
           totalUsed={hintsUsed}
           activeEventId={hintEventId}

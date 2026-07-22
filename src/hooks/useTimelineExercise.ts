@@ -13,17 +13,43 @@ import { shuffleArray } from '../utils/shuffle';
 import { useContainerDnd } from './useContainerDnd';
 
 function createInitialContainers(
-  investigationCase: InvestigationCase,
+  selectedEvents: ForensicEvent[],
 ): Record<string, string[]> {
   return {
-    [DND_CONTAINER_IDS.evidence]: shuffleArray(investigationCase.events).map(
+    [DND_CONTAINER_IDS.evidence]: shuffleArray(selectedEvents).map(
       (event) => event.id,
     ),
     [DND_CONTAINER_IDS.timeline]: [],
   };
 }
 
-export function useTimelineExercise(caseId: string | undefined) {
+function resolveSelectedEvents(
+  investigationCase: InvestigationCase | undefined,
+  selectedEvidenceIds: readonly string[] | undefined,
+): ForensicEvent[] {
+  if (!investigationCase || !selectedEvidenceIds) {
+    return [];
+  }
+  const caseEventIds = new Set(investigationCase.events.map((event) => event.id));
+  const seen = new Set<string>();
+  const resolved: ForensicEvent[] = [];
+  for (const id of selectedEvidenceIds) {
+    if (!caseEventIds.has(id) || seen.has(id)) {
+      continue;
+    }
+    const event = investigationCase.events.find((item) => item.id === id);
+    if (event) {
+      resolved.push(event);
+      seen.add(id);
+    }
+  }
+  return resolved;
+}
+
+export function useTimelineExercise(
+  caseId: string | undefined,
+  selectedEvidenceIds: readonly string[] | undefined,
+) {
   const navigate = useNavigate();
   const investigationCase = caseId ? getCaseById(caseId) : undefined;
   const startTimeRef = useRef(Date.now());
@@ -34,23 +60,19 @@ export function useTimelineExercise(caseId: string | undefined) {
     Record<string, number>
   >({});
 
+  const selectedEvents = useMemo(
+    () => resolveSelectedEvents(investigationCase, selectedEvidenceIds),
+    [investigationCase, selectedEvidenceIds],
+  );
+
   const eventsById = useMemo<Record<string, ForensicEvent>>(
-    () =>
-      investigationCase
-        ? buildEventsById(investigationCase.events)
-        : {},
-    [investigationCase],
+    () => buildEventsById(selectedEvents),
+    [selectedEvents],
   );
 
   const initialContainers = useMemo(
-    () =>
-      investigationCase
-        ? createInitialContainers(investigationCase)
-        : {
-            [DND_CONTAINER_IDS.evidence]: [],
-            [DND_CONTAINER_IDS.timeline]: [],
-          },
-    [investigationCase],
+    () => createInitialContainers(selectedEvents),
+    [selectedEvents],
   );
 
   const { containers, handleDragEnd: onDragEnd } = useContainerDnd(
@@ -76,7 +98,7 @@ export function useTimelineExercise(caseId: string | undefined) {
       if (hintsUsed >= HINT_BUDGET) {
         return;
       }
-      const event = investigationCase?.events.find((e) => e.id === eventId);
+      const event = selectedEvents.find((e) => e.id === eventId);
       const totalLevels = event?.hints?.length ?? 0;
       const currentRevealed = revealedByEvent[eventId] ?? 0;
       if (totalLevels > 0 && currentRevealed >= totalLevels) {
@@ -89,7 +111,7 @@ export function useTimelineExercise(caseId: string | undefined) {
         [eventId]: Math.min(currentRevealed + 1, totalLevels),
       }));
     },
-    [hintsUsed, investigationCase, revealedByEvent],
+    [hintsUsed, selectedEvents, revealedByEvent],
   );
 
   const handleSubmit = () => {
@@ -99,7 +121,7 @@ export function useTimelineExercise(caseId: string | undefined) {
 
     const result = checkTimelineAnswer(
       containers[DND_CONTAINER_IDS.timeline],
-      investigationCase.events,
+      selectedEvents,
     );
     const completionTime = Date.now() - startTimeRef.current;
     const accuracy = result.score / 100;
@@ -136,6 +158,7 @@ export function useTimelineExercise(caseId: string | undefined) {
 
   return {
     investigationCase,
+    selectedEvents,
     eventsById,
     containers,
     activeEvent,
