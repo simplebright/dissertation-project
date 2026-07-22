@@ -10,5 +10,10 @@ export function isExerciseMode(value: unknown): value is ExerciseMode {
 export function isExerciseLocationState(
   state: unknown,
 ): state is ExerciseLocationState {
-  return isRecord(state) && isExerciseMode(state.mode);
+  return (
+    isRecord(state) &&
+    isExerciseMode(state.mode) &&
+    Array.isArray(state.selectedEvidenceIds) &&
+    state.selectedEvidenceIds.every((id) => typeof id === 'string')
+  );
 }

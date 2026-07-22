@@ -42,7 +42,9 @@ export function ExerciseModeSelection() {
   }
 
   const handleStart = () => {
-    navigate(`/exercise/${caseId}`, { state: { mode: selectedMode } });
+    navigate(`/exercise/${caseId}/evidence`, {
+      state: { mode: selectedMode, selectedEvidenceIds: [] },
+    });
   };
 
   return (

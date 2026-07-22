@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { CaseSelection } from './pages/CaseSelection';
 import { Dashboard } from './pages/Dashboard';
+import { EvidenceSelection } from './pages/EvidenceSelection';
 import { Home } from './pages/Home';
 import { Results } from './pages/Results';
 import { ExerciseModeSelection } from './pages/ExerciseModeSelection';
@@ -18,6 +19,10 @@ export const router = createBrowserRouter([
   {
     path: '/exercise/:caseId/mode',
     element: <ExerciseModeSelection />,
+  },
+  {
+    path: '/exercise/:caseId/evidence',
+    element: <EvidenceSelection />,
   },
   {
     path: '/exercise/:caseId',
