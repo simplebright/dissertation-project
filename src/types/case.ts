@@ -16,7 +16,8 @@ export interface ForensicEvent {
   type: EventType;
   description: string;
   correctOrder: number;
-  explanation: string;
+  isRelevant: boolean;
+  explanation?: string;
   relationships?: EventRelationship[];
   hints?: string[];
   visibleInAdvanced?: boolean;

@@ -6,14 +6,33 @@
   "events": [
     {
       "id": "evt-001-01",
+      "timestamp": "2024-11-08T08:45:22Z",
+      "type": "history",
+      "description": "Visited https://www.bbc.com/news (title: BBC News – Home)",
+      "correctOrder": 0,
+      "isRelevant": false,
+      "explanation": "Unrelated news browsing activity."
+    },
+    {
+      "id": "evt-001-02",
+      "timestamp": "2024-11-08T08:46:55Z",
+      "type": "search",
+      "description": "Google search: \"weather forecast London weekend\"",
+      "correctOrder": 0,
+      "isRelevant": false,
+      "explanation": "Personal weather search unrelated to the investigation."
+    },
+    {
+      "id": "evt-001-03",
       "timestamp": "2024-11-08T08:47:12Z",
       "type": "search",
       "description": "Google search: \"university student portal login\"",
       "correctOrder": 1,
+      "isRelevant": true,
       "explanation": "The user began by searching for the official university login page, establishing intent to access the portal.",
       "relationships": [
-        { "type": "before", "targetEventId": "evt-001-02", "label": "A search for the login page often precedes a direct visit to that page." },
-        { "type": "before", "targetEventId": "evt-001-03", "label": "A login page search commonly appears before session cookies are created." }
+        { "type": "before", "targetEventId": "evt-001-04", "label": "A search for the login page often precedes a direct visit to that page." },
+        { "type": "before", "targetEventId": "evt-001-05", "label": "A login page search commonly appears before session cookies are created." }
       ],
       "hints": [
         "Think about which action usually happens first when someone wants to reach a specific website.",
@@ -22,14 +41,15 @@
       ]
     },
     {
-      "id": "evt-001-02",
+      "id": "evt-001-04",
       "timestamp": "2024-11-08T08:48:03Z",
       "type": "history",
       "description": "Visited https://portal.westfield-uni.ac.uk/login (title: Student Portal – Sign In)",
       "correctOrder": 2,
+      "isRelevant": true,
       "explanation": "The search result led directly to the university authentication page.",
       "relationships": [
-        { "type": "before", "targetEventId": "evt-001-03", "label": "Loading an authenticated login page often precedes session cookies being set." }
+        { "type": "before", "targetEventId": "evt-001-05", "label": "Loading an authenticated login page often precedes session cookies being set." }
       ],
       "hints": [
         "Think about what normally happens once a user clicks a search result.",
@@ -38,15 +58,16 @@
       ]
     },
     {
-      "id": "evt-001-03",
+      "id": "evt-001-05",
       "timestamp": "2024-11-08T08:49:31Z",
       "type": "cookie",
       "description": "Cookie set: PHPSESSID on portal.westfield-uni.ac.uk (expires session)",
       "correctOrder": 3,
+      "isRelevant": true,
       "explanation": "A session cookie was issued after the login page loaded, indicating an active browser session with the portal.",
       "relationships": [
-        { "type": "after", "targetEventId": "evt-001-02", "label": "Session cookies are commonly set after a user loads an authenticated page." },
-        { "type": "before", "targetEventId": "evt-001-04", "label": "Successful authentication usually leads to a dashboard or authenticated area." }
+        { "type": "after", "targetEventId": "evt-001-04", "label": "Session cookies are commonly set after a user loads an authenticated page." },
+        { "type": "before", "targetEventId": "evt-001-06", "label": "Successful authentication usually leads to a dashboard or authenticated area." }
       ],
       "hints": [
         "Think about which artefact is created when a login page finishes loading.",
@@ -55,14 +76,24 @@
       ]
     },
     {
-      "id": "evt-001-04",
+      "id": "evt-001-06",
+      "timestamp": "2024-11-08T08:50:17Z",
+      "type": "history",
+      "description": "Visited https://www.youtube.com/watch?v=dQw4w9WgXcQ (title: Never Gonna Give You Up)",
+      "correctOrder": 0,
+      "isRelevant": false,
+      "explanation": "Unrelated video streaming activity."
+    },
+    {
+      "id": "evt-001-07",
       "timestamp": "2024-11-08T08:51:18Z",
       "type": "history",
       "description": "Visited https://portal.westfield-uni.ac.uk/dashboard (title: Student Dashboard)",
       "correctOrder": 4,
+      "isRelevant": true,
       "explanation": "Successful authentication redirected the browser to the student dashboard.",
       "relationships": [
-        { "type": "before", "targetEventId": "evt-001-05", "label": "A later password reset search suggests a change in account state after dashboard access." }
+        { "type": "before", "targetEventId": "evt-001-08", "label": "A later password reset search suggests a change in account state after dashboard access." }
       ],
       "hints": [
         "Think about where a user is taken after a login succeeds.",
@@ -71,14 +102,24 @@
       ]
     },
     {
-      "id": "evt-001-05",
+      "id": "evt-001-08",
+      "timestamp": "2024-11-08T14:05:33Z",
+      "type": "search",
+      "description": "Google search: \"best coffee shops near campus\"",
+      "correctOrder": 0,
+      "isRelevant": false,
+      "explanation": "Unrelated local search for coffee shops."
+    },
+    {
+      "id": "evt-001-09",
       "timestamp": "2024-11-08T14:06:44Z",
       "type": "search",
       "description": "Google search: \"westfield university password reset forgot\"",
       "correctOrder": 5,
+      "isRelevant": true,
       "explanation": "Hours later, a password reset search suggests either account compromise or an unauthorised party attempting credential recovery.",
       "relationships": [
-        { "type": "before", "targetEventId": "evt-001-06", "label": "A search for password reset typically precedes opening a reset page." }
+        { "type": "before", "targetEventId": "evt-001-10", "label": "A search for password reset typically precedes opening a reset page." }
       ],
       "hints": [
         "Think about why a user might revisit credential recovery options hours after logging in.",
@@ -87,14 +128,15 @@
       ]
     },
     {
-      "id": "evt-001-06",
+      "id": "evt-001-10",
       "timestamp": "2024-11-08T14:07:29Z",
       "type": "history",
       "description": "Visited https://portal.westfield-uni.ac.uk/account/reset-password",
       "correctOrder": 6,
+      "isRelevant": true,
       "explanation": "The attacker navigated to the self-service password reset flow, a common step after gaining partial account access.",
       "relationships": [
-        { "type": "before", "targetEventId": "evt-001-07", "label": "Visiting a reset page usually precedes evidence of a successful reset or re-authentication." }
+        { "type": "before", "targetEventId": "evt-001-11", "label": "Visiting a reset page usually precedes evidence of a successful reset or re-authentication." }
       ],
       "hints": [
         "Think about which page follows a user clicking a password reset search result.",
@@ -103,20 +145,30 @@
       ]
     },
     {
-      "id": "evt-001-07",
+      "id": "evt-001-11",
       "timestamp": "2024-11-08T14:08:55Z",
       "type": "cookie",
       "description": "Cookie updated: auth_token on portal.westfield-uni.ac.uk (expires 2024-11-15)",
       "correctOrder": 7,
+      "isRelevant": true,
       "explanation": "A persistent authentication token was written, confirming the password reset or re-login completed successfully.",
       "relationships": [
-        { "type": "after", "targetEventId": "evt-001-06", "label": "A persistent authentication token often appears after a reset page has been completed." }
+        { "type": "after", "targetEventId": "evt-001-10", "label": "A persistent authentication token often appears after a reset page has been completed." }
       ],
       "hints": [
         "Think about which artefact is produced when a reset flow finishes successfully.",
         "New or updated auth cookies are strong indicators of a completed authentication change.",
         "The persistent auth_token cookie should be placed last, immediately after the reset page visit."
       ]
+    },
+    {
+      "id": "evt-001-12",
+      "timestamp": "2024-11-08T14:10:22Z",
+      "type": "search",
+      "description": "Google search: \"amazon prime day deals 2024\"",
+      "correctOrder": 0,
+      "isRelevant": false,
+      "explanation": "Unrelated shopping search activity."
     }
   ]
 }
