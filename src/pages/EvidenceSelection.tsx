@@ -8,13 +8,19 @@ import { EmptyState } from '../components/ui/PageLayout';
 import { PageHeader } from '../components/ui/PageHeader';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import { EventTypeBadge } from '../components/case/EventTypeBadge';
+import { HintPanel } from '../components/exercise/HintPanel';
 import { getCaseById } from '../data/caseRegistry';
+import { HINT_BUDGET } from '../constants/hints';
 import {
   clearPersistedSelection,
   loadPersistedSelection,
   savePersistedSelection,
 } from '../utils/evidenceSelectionStorage';
 import { isExerciseMode } from '../utils/exerciseMode';
+import {
+  loadHintState,
+  saveHintState,
+} from '../utils/hintStorage';
 
 type FilterType = EventType | 'all';
 
@@ -226,6 +232,22 @@ export function EvidenceSelection() {
     !incomingState?.selectedEvidenceIds?.length &&
     Boolean(restoreFromCache?.selectedEvidenceIds.length);
 
+  const [hintsUsed, setHintsUsed] = useState<number>(() => {
+    if (!caseId) {
+      return 0;
+    }
+    return loadHintState(caseId)?.hintsUsed ?? 0;
+  });
+
+  const [selectionHintsRevealed, setSelectionHintsRevealed] = useState<number>(
+    () => {
+      if (!caseId) {
+        return 0;
+      }
+      return loadHintState(caseId)?.selectionHintsRevealed ?? 0;
+    },
+  );
+
   useEffect(() => {
     if (!caseId || !mode) {
       return;
@@ -240,6 +262,13 @@ export function EvidenceSelection() {
       selectedEvidenceIds: selectedIds,
     });
   }, [caseId, mode, selectedIds]);
+
+  useEffect(() => {
+    if (!caseId) {
+      return;
+    }
+    saveHintState(caseId, hintsUsed, selectionHintsRevealed);
+  }, [caseId, hintsUsed, selectionHintsRevealed]);
 
   const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
 
@@ -287,6 +316,11 @@ export function EvidenceSelection() {
 
   const handleClearAll = () => {
     setSelectedIds([]);
+  };
+
+  const handleUseSelectionHint = () => {
+    setHintsUsed((count) => Math.min(count + 1, HINT_BUDGET));
+    setSelectionHintsRevealed((count) => Math.min(count + 1, HINT_BUDGET));
   };
 
   const handleContinue = () => {
@@ -518,6 +552,14 @@ export function EvidenceSelection() {
           </Button>
         </div>
       </div>
+
+      <HintPanel
+        mode="selection"
+        totalAvailable={HINT_BUDGET}
+        totalUsed={hintsUsed}
+        selectionHintsRevealed={selectionHintsRevealed}
+        onUseSelectionHint={handleUseSelectionHint}
+      />
     </main>
   );
 }

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { HINT_BUDGET } from '../constants/hints';
@@ -8,6 +8,11 @@ import type { ForensicEvent, InvestigationCase } from '../types/case';
 import { checkTimelineAnswer } from '../utils/checkTimelineAnswer';
 import { evaluateEvidenceSelection } from '../utils/evaluateEvidenceSelection';
 import { buildEventsById } from '../utils/events';
+import {
+  clearHintState,
+  loadHintState,
+  saveHintState,
+} from '../utils/hintStorage';
 import { saveAttempt } from '../utils/progressStorage';
 import type { AttemptRecord } from '../types/progress';
 import { shuffleArray } from '../utils/shuffle';
@@ -56,10 +61,30 @@ export function useTimelineExercise(
   const startTimeRef = useRef(Date.now());
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const [hintEventId, setHintEventId] = useState<string | null>(null);
-  const [hintsUsed, setHintsUsed] = useState(0);
+  const [hintsUsed, setHintsUsed] = useState<number>(() => {
+    if (!caseId) {
+      return 0;
+    }
+    return loadHintState(caseId)?.hintsUsed ?? 0;
+  });
   const [revealedByEvent, setRevealedByEvent] = useState<
     Record<string, number>
   >({});
+
+  useEffect(() => {
+    if (!caseId) {
+      return;
+    }
+    saveHintState(caseId, hintsUsed, loadHintState(caseId)?.selectionHintsRevealed ?? 0);
+  }, [caseId, hintsUsed]);
+
+  useEffect(() => {
+    return () => {
+      if (caseId) {
+        clearHintState(caseId);
+      }
+    };
+  }, [caseId]);
 
   const selectedEvents = useMemo(
     () => resolveSelectedEvents(investigationCase, selectedEvidenceIds),
