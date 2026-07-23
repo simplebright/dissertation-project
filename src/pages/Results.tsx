@@ -112,9 +112,22 @@ export function Results() {
             />
           </div>
 
+          <div className="mt-8 border-t border-edu-100 pt-6">
+            <h3
+              id="selection-feedback-heading"
+              className="text-base font-semibold text-edu-900"
+            >
+              Evidence Selection Feedback
+            </h3>
+            <p className="mt-1 text-xs leading-relaxed text-slate-600">
+              Each incorrectly handled event includes forensic reasoning — the same cues a forensic examiner would use to justify a triage decision.
+            </p>
+          </div>
+
           <EvidenceSelectionFeedback
             title="Correctly Selected Evidence"
             subtitle="These events are genuinely relevant to the investigation."
+            guidance="Why does each item belong here? Review the reasoning — your future triage accuracy improves when you can articulate why an artefact matches the investigation objective, not just guess that it does."
             items={selection.correctlySelectedEvents}
             emptyMessage="No events were correctly identified as relevant."
             variant="correct"
@@ -123,17 +136,19 @@ export function Results() {
           <EvidenceSelectionFeedback
             title="False Positives"
             subtitle="You selected these, but they are not relevant to the investigation."
+            guidance="False positives dilute the evidence chain and increase the risk of misinterpreting unrelated activity as forensic signal. Use the reasoning below to spot the cues you may have missed and tighten your selection criteria for next time."
             items={selection.falsePositiveEvents}
             emptyMessage="No false positives — every selected event was genuinely relevant."
-            variant="incorrect"
+            variant="falsePositive"
             ariaLabel="False positive evidence"
           />
           <EvidenceSelectionFeedback
             title="False Negatives"
             subtitle="You missed these relevant events."
+            guidance="Missed events mean your reconstruction of the user's activity is incomplete. Read each reasoning block to see how the event would extend the chain, then check your own selection method for blind spots."
             items={selection.falseNegativeEvents}
             emptyMessage="No false negatives — every relevant event was selected."
-            variant="incorrect"
+            variant="falseNegative"
             ariaLabel="False negative evidence"
           />
         </Card>
