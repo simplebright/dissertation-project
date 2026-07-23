@@ -9,6 +9,12 @@ export interface AttemptRecord {
   confidence: number;
   completedAt: string;
   mistakeDetails?: import('./mistake').MistakeRecord[];
+  /** Stage 1 — evidence selection accuracy 0..100. */
+  selectionAccuracy: number;
+  /** Stage 1 — event IDs selected but not relevant. */
+  selectionFPIds: string[];
+  /** Stage 1 — event IDs relevant but not selected. */
+  selectionFNIds: string[];
 }
 
 export type ConfidenceLevel = 1 | 2 | 3;
@@ -37,6 +43,7 @@ export interface DashboardStats {
   averageHintsUsed: number;
   averageConfidence: number;
   progressPercent: number;
+  averageSelectionAccuracy: number;
 }
 
 export interface AttemptHistoryEntry {
@@ -49,10 +56,20 @@ export interface AttemptHistoryEntry {
   completedAt: string;
 }
 
+export interface SelectionErrorEntry {
+  eventId: string;
+  count: number;
+  type: 'FP' | 'FN';
+}
+
 export interface LearningInsights {
   mostCommonMistakes: { category: string; count: number }[];
   averageScore: number;
   improvementDelta: number | null;
   averageConfidence: number | null;
   ratedAttemptCount: number;
+  averageSelectionAccuracy: number;
+  averageSelectionFP: number;
+  averageSelectionFN: number;
+  mostCommonSelectionErrors: SelectionErrorEntry[];
 }

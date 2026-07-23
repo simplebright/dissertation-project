@@ -11,6 +11,7 @@ import {
   getDashboardStats,
   getLearningInsights,
 } from '../utils/progressStorage';
+import type { SelectionErrorEntry } from '../types/progress';
 
 function formatImprovement(delta: number | null): string {
   if (delta === null) {
@@ -24,6 +25,20 @@ function formatImprovement(delta: number | null): string {
 
 function formatConfidence(value: number | null): string {
   return value === null ? '—' : `${value.toFixed(2)} / 3`;
+}
+
+function SelectionErrorBadge({ type }: { type: 'FP' | 'FN' }) {
+  return (
+    <span
+      className={`inline-block rounded px-1.5 py-0.5 text-xs font-semibold ${
+        type === 'FP'
+          ? 'bg-rose-100 text-rose-700'
+          : 'bg-amber-100 text-amber-700'
+      }`}
+    >
+      {type}
+    </span>
+  );
 }
 
 export function Dashboard() {
@@ -66,6 +81,94 @@ export function Dashboard() {
             value={stats.progressPercent}
             label={`${stats.completedCount} of ${stats.totalCases} cases completed`}
           />
+        </Card>
+
+        <Card as="section" className="mt-8" aria-labelledby="selection-heading">
+          <h2 id="selection-heading" className="edu-section-title">
+            Evidence Selection Analytics
+          </h2>
+          <p className="mt-2 text-sm text-slate-600">
+            Tracks how accurately you identify relevant evidence vs. distractor events across all attempts.
+          </p>
+
+          {hasData ? (
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <StatCard
+                label="Avg. Ordering Accuracy"
+                value={`${Math.round(stats.averageAccuracy * 100)}%`}
+                valueClassName="text-edu-600"
+              />
+              <StatCard
+                label="Avg. Selection Accuracy"
+                value={`${insights.averageSelectionAccuracy}%`}
+                valueClassName={
+                  insights.averageSelectionAccuracy === 100
+                    ? 'text-emerald-600'
+                    : insights.averageSelectionAccuracy >= 70
+                      ? 'text-edu-600'
+                      : insights.averageSelectionAccuracy > 0
+                        ? 'text-rose-600'
+                        : 'text-slate-400'
+                }
+              />
+              <StatCard
+                label="Avg. False Positives"
+                value={
+                  insights.averageSelectionFP > 0
+                    ? `${insights.averageSelectionFP.toFixed(1)} / attempt`
+                    : '—'
+                }
+                valueClassName={
+                  insights.averageSelectionFP === 0
+                    ? 'text-emerald-600'
+                    : 'text-rose-600'
+                }
+              />
+              <StatCard
+                label="Avg. False Negatives"
+                value={
+                  insights.averageSelectionFN > 0
+                    ? `${insights.averageSelectionFN.toFixed(1)} / attempt`
+                    : '—'
+                }
+                valueClassName={
+                  insights.averageSelectionFN === 0
+                    ? 'text-emerald-600'
+                    : 'text-rose-600'
+                }
+              />
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-slate-500">
+              Analytics will appear after you complete your first case.
+            </p>
+          )}
+
+          {hasData && insights.mostCommonSelectionErrors.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-sm font-semibold text-slate-700">
+                Most Common Selection Errors
+              </h3>
+              <ul className="mt-3 flex flex-col gap-2">
+                {insights.mostCommonSelectionErrors.map((error: SelectionErrorEntry) => (
+                  <li
+                    key={`${error.type}-${error.eventId}`}
+                    className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-sm"
+                  >
+                    <div className="flex items-center gap-2">
+                      <SelectionErrorBadge type={error.type} />
+                      <span className="font-mono text-xs text-slate-600">
+                        {error.eventId}
+                      </span>
+                    </div>
+                    <span className="text-xs text-slate-500">
+                      {error.count} occurrence{error.count !== 1 ? 's' : ''}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </Card>
 
         <section aria-labelledby="insights-heading" className="mt-8">

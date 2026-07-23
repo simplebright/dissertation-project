@@ -32,6 +32,18 @@ function isAttemptRecord(value: unknown): value is AttemptRecord {
     return false;
   }
 
+  if (
+    'selectionAccuracy' in value ||
+    'selectionFPIds' in value ||
+    'selectionFNIds' in value
+  ) {
+    return (
+      typeof value.selectionAccuracy === 'number' &&
+      Array.isArray(value.selectionFPIds) &&
+      Array.isArray(value.selectionFNIds)
+    );
+  }
+
   return true;
 }
 
@@ -84,6 +96,9 @@ function migrateLegacyProgress(stored: unknown): ProgressData {
           mistakes: 0,
           confidence: 0,
           completedAt: record.completedAt,
+          selectionAccuracy: 0,
+          selectionFPIds: [],
+          selectionFNIds: [],
         };
       });
 
@@ -187,6 +202,7 @@ export function getDashboardStats(): DashboardStats {
       averageHintsUsed: 0,
       averageConfidence: 0,
       progressPercent: 0,
+      averageSelectionAccuracy: 0,
     };
   }
 
@@ -208,6 +224,11 @@ export function getDashboardStats(): DashboardStats {
     0,
   );
 
+  const totalSelectionAccuracy = attempts.reduce(
+    (sum, attempt) => sum + (attempt.selectionAccuracy ?? 0),
+    0,
+  );
+
   return {
     completedCases,
     completedCount,
@@ -219,6 +240,7 @@ export function getDashboardStats(): DashboardStats {
     averageHintsUsed: totalHints / attempts.length,
     averageConfidence: totalConfidence / attempts.length,
     progressPercent: Math.round((completedCount / TOTAL_CASE_COUNT) * 100),
+    averageSelectionAccuracy: Math.round(totalSelectionAccuracy / attempts.length),
   };
 }
 
@@ -251,6 +273,10 @@ export function getLearningInsights(): LearningInsights {
       improvementDelta: null,
       averageConfidence: null,
       ratedAttemptCount: 0,
+      averageSelectionAccuracy: 0,
+      averageSelectionFP: 0,
+      averageSelectionFN: 0,
+      mostCommonSelectionErrors: [],
     };
   }
 
@@ -311,11 +337,56 @@ export function getLearningInsights(): LearningInsights {
         )
       : null;
 
+  const totalSelectionAccuracy = attempts.reduce(
+    (sum, attempt) => sum + (attempt.selectionAccuracy ?? 0),
+    0,
+  );
+  const totalSelectionFP = attempts.reduce(
+    (sum, attempt) => sum + (attempt.selectionFPIds?.length ?? 0),
+    0,
+  );
+  const totalSelectionFN = attempts.reduce(
+    (sum, attempt) => sum + (attempt.selectionFNIds?.length ?? 0),
+    0,
+  );
+
+  const fpCounts = new Map<string, number>();
+  const fnCounts = new Map<string, number>();
+  for (const attempt of attempts) {
+    for (const id of attempt.selectionFPIds ?? []) {
+      fpCounts.set(id, (fpCounts.get(id) ?? 0) + 1);
+    }
+    for (const id of attempt.selectionFNIds ?? []) {
+      fnCounts.set(id, (fnCounts.get(id) ?? 0) + 1);
+    }
+  }
+
+  const selectionErrorEntries: Array<{ eventId: string; count: number; type: 'FP' | 'FN' }> = [
+    ...Array.from(fpCounts.entries()).map(([eventId, count]) => ({
+      eventId,
+      count,
+      type: 'FP' as const,
+    })),
+    ...Array.from(fnCounts.entries()).map(([eventId, count]) => ({
+      eventId,
+      count,
+      type: 'FN' as const,
+    })),
+  ];
+
+  const mostCommonSelectionErrors = selectionErrorEntries
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+
   return {
     mostCommonMistakes,
     averageScore,
     improvementDelta,
     averageConfidence,
     ratedAttemptCount: ratedAttempts.length,
+    averageSelectionAccuracy: Math.round(totalSelectionAccuracy / attempts.length),
+    averageSelectionFP: Math.round((totalSelectionFP / attempts.length) * 10) / 10,
+    averageSelectionFN: Math.round((totalSelectionFN / attempts.length) * 10) / 10,
+    mostCommonSelectionErrors,
   };
 }

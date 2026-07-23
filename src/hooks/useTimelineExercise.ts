@@ -142,6 +142,9 @@ export function useTimelineExercise(
       confidence: 0,
       completedAt: new Date().toISOString(),
       mistakeDetails: result.mistakes,
+      selectionAccuracy: selection.accuracy,
+      selectionFPIds: selection.falsePositiveEvents.map((e) => e.id),
+      selectionFNIds: selection.falseNegativeEvents.map((e) => e.id),
     };
 
     saveAttempt(attempt);
