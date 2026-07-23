@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
-import type { ForensicEvent } from '../types/case';
+import type { EventType, ForensicEvent } from '../types/case';
 import type { ExerciseMode } from '../types/exercise';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -15,6 +15,8 @@ import {
   savePersistedSelection,
 } from '../utils/evidenceSelectionStorage';
 import { isExerciseMode } from '../utils/exerciseMode';
+
+type FilterType = EventType | 'all';
 
 interface EvidencePanelProps {
   title: string;
@@ -56,6 +58,17 @@ const ACTION_ICON: Record<EvidencePanelProps['variant'], string> = {
   available: '+',
   selected: '−',
 };
+
+const FILTER_OPTIONS: {
+  value: FilterType;
+  label: string;
+}[] = [
+  { value: 'all', label: 'All' },
+  { value: 'history', label: 'History' },
+  { value: 'search', label: 'Search' },
+  { value: 'cookie', label: 'Cookie' },
+  { value: 'download', label: 'Download' },
+];
 
 function EvidencePanel({
   title,
@@ -142,6 +155,8 @@ export function EvidenceSelection() {
   const navigate = useNavigate();
   const investigationCase = caseId ? getCaseById(caseId) : undefined;
 
+  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+
   const incomingState = useMemo<IncomingState | null>(() => {
     const state = location.state as { mode?: unknown; selectedEvidenceIds?: unknown } | null;
     if (!state || !isExerciseMode(state.mode)) {
@@ -227,9 +242,24 @@ export function EvidenceSelection() {
   }, [caseId, mode, selectedIds]);
 
   const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
+
+  const filteredIds = useMemo(() => {
+    if (activeFilter === 'all') {
+      return allEventIds;
+    }
+    return allEventIds.filter(
+      (id) => eventsById[id]?.type === activeFilter,
+    );
+  }, [allEventIds, eventsById, activeFilter]);
+
   const availableIds = useMemo(
-    () => allEventIds.filter((id) => !selectedIdSet.has(id)),
-    [allEventIds, selectedIdSet],
+    () => filteredIds.filter((id) => !selectedIdSet.has(id)),
+    [filteredIds, selectedIdSet],
+  );
+
+  const selectedFilteredIds = useMemo(
+    () => filteredIds.filter((id) => selectedIdSet.has(id)),
+    [filteredIds, selectedIdSet],
   );
 
   if (!investigationCase) {
@@ -271,6 +301,9 @@ export function EvidenceSelection() {
     });
   };
 
+  const totalMatchingFilter = filteredIds.length;
+  const selectedInFilter = selectedFilteredIds.length;
+
   const progressValue = Math.round(
     (selectedIds.length / Math.max(allEventIds.length, 1)) * 100,
   );
@@ -285,6 +318,134 @@ export function EvidenceSelection() {
           title={investigationCase.title}
           description="Review the available evidence and click each card you believe is relevant to the investigation. Click a selected card again to remove it."
         />
+
+        {/* Educational Guidance Panel */}
+        <div className="mt-8 flex flex-col gap-4">
+          {/* Investigation Objective */}
+          <div className="rounded-2xl border border-edu-200 bg-gradient-to-br from-edu-50 to-blue-50/60 p-5 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-edu-200/70">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4 text-edu-800"
+                  aria-hidden="true"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-edu-600">
+                  Investigation Objective
+                </p>
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-700">
+                  {investigationCase.investigationObjective}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Educational Reminder */}
+          <div className="rounded-2xl border border-sky-200/80 bg-gradient-to-br from-sky-50/70 to-indigo-50/40 p-5 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100/70">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4 text-sky-700"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 16v-4" />
+                  <path d="M12 8h.01" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-sky-600">
+                  Forensic Tip
+                </p>
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-700">
+                  Relevant browser artefacts usually form a{' '}
+                  <span className="font-semibold text-slate-900">
+                    connected sequence of user activities
+                  </span>
+                  . Think about what a user would do before and after each action — isolated events are less likely to be part of a meaningful investigation thread.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filter Bar */}
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-slate-600">
+              Filter by event type
+            </p>
+            <div
+              className="mt-2 flex flex-wrap gap-2"
+              role="group"
+              aria-label="Filter evidence by type"
+            >
+              {FILTER_OPTIONS.map((option) => {
+                const isActive = activeFilter === option.value;
+                const count =
+                  option.value === 'all'
+                    ? allEventIds.length
+                    : allEventIds.filter(
+                        (id) => eventsById[id]?.type === option.value,
+                      ).length;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setActiveFilter(option.value)}
+                    aria-pressed={isActive}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-edu-500 ${
+                      isActive
+                        ? 'border-edu-400 bg-edu-600 text-white shadow-sm'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-edu-300 hover:bg-edu-50'
+                    }`}
+                  >
+                    {option.value !== 'all' && (
+                      <EventTypeBadge type={option.value as EventType} />
+                    )}
+                    {option.label}
+                    <span
+                      className={`rounded-full px-1.5 py-0.5 text-xs leading-none ${
+                        isActive
+                          ? 'bg-edu-800/40 text-white'
+                          : 'bg-slate-100 text-slate-500'
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {activeFilter !== 'all' && (
+            <div className="text-sm text-slate-500 sm:text-right">
+              <span className="font-medium text-slate-700">
+                {selectedInFilter}
+              </span>{' '}
+              of {totalMatchingFilter} shown
+            </div>
+          )}
+        </div>
 
         <div className="mt-8">
           <ProgressBar
@@ -320,7 +481,11 @@ export function EvidenceSelection() {
         <div className="mt-8 grid gap-6 lg:grid-cols-2">
           <EvidencePanel
             title="Available Evidence"
-            emptyMessage="All evidence items have been selected."
+            emptyMessage={
+              activeFilter !== 'all'
+                ? `No ${activeFilter} events available to select.`
+                : 'All evidence items have been selected.'
+            }
             eventIds={availableIds}
             eventsById={eventsById}
             variant="available"
@@ -328,8 +493,12 @@ export function EvidenceSelection() {
           />
           <EvidencePanel
             title="Selected Evidence"
-            emptyMessage="No evidence selected yet. Click cards on the left to add them."
-            eventIds={selectedIds}
+            emptyMessage={
+              activeFilter !== 'all'
+                ? `No ${activeFilter} events selected.`
+                : 'No evidence selected yet. Click cards on the left to add them.'
+            }
+            eventIds={selectedFilteredIds}
             eventsById={eventsById}
             variant="selected"
             onToggle={toggleEvent}
