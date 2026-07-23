@@ -9,31 +9,31 @@
       "id": "evt-002-01",
       "timestamp": "2024-10-22T16:30:12Z",
       "type": "history",
-      "description": "Visited https://www.reddit.com/r/programming (title: Reddit – Programming)",
+      "description": "[Chrome] Visited https://www.reddit.com/r/programming (title: Reddit – r/programming, visit count: 14, last visit: 2024-10-21)",
       "correctOrder": 0,
       "isRelevant": false,
-      "explanation": "Unrelated browsing activity during break time."
+      "explanation": "Unrelated programming forum browsing during a break — a regular, habitual visit pattern."
     },
     {
       "id": "evt-002-02",
       "timestamp": "2024-10-22T16:31:45Z",
       "type": "search",
-      "description": "Google search: \"how to pass multiple parameters to react hooks\"",
+      "description": "[Chrome] Google search: \"how to pass multiple parameters to React useEffect\"",
       "correctOrder": 0,
       "isRelevant": false,
-      "explanation": "Technical research unrelated to the investigation."
+      "explanation": "Technical research unrelated to the investigation — a common developer search pattern."
     },
     {
       "id": "evt-002-03",
       "timestamp": "2024-10-22T16:32:08Z",
       "type": "search",
-      "description": "Bing search: \"meridian corp intranet document library\"",
+      "description": "[Chrome] Bing search: \"meridian corp intranet document library\" (engine: Bing, SafeSearch: off)",
       "correctOrder": 1,
       "isRelevant": true,
-      "explanation": "The session started with a targeted search for the internal document repository.",
+      "explanation": "The session pivoted to a targeted Bing search for the internal document repository. The use of Bing (not the browser default) and SafeSearch disabled are notable search behaviour indicators.",
       "relationships": [
         { "type": "before", "targetEventId": "evt-002-04", "label": "The search result led directly to the corporate intranet landing page." },
-        { "type": "before", "targetEventId": "evt-002-05", "label": "A targeted intranet search commonly precedes a session cookie being set." }
+        { "type": "before", "targetEventId": "evt-002-05", "label": "A targeted intranet search commonly precedes SSO session cookie creation." }
       ],
       "hints": [
         "Think about which action usually happens first when a user wants to reach an internal system.",
@@ -45,10 +45,10 @@
       "id": "evt-002-04",
       "timestamp": "2024-10-22T16:33:15Z",
       "type": "history",
-      "description": "Visited https://intranet.meridiancorp.local/ (title: Meridian Corp Intranet Home)",
+      "description": "[Chrome] Visited https://intranet.meridiancorp.local/ (title: Meridian Corp Intranet Home, referrer: https://www.bing.com/, IP: 10.0.8.45)",
       "correctOrder": 2,
       "isRelevant": true,
-      "explanation": "The browser accessed the corporate intranet landing page from the search result.",
+      "explanation": "The browser accessed the corporate intranet landing page from the Bing search result. The internal IP address (10.0.8.45) confirms on-premises network access.",
       "relationships": [
         { "type": "before", "targetEventId": "evt-002-05", "label": "Loading an authenticated portal page commonly precedes session cookie creation." }
       ],
@@ -62,13 +62,13 @@
       "id": "evt-002-05",
       "timestamp": "2024-10-22T16:33:42Z",
       "type": "cookie",
-      "description": "Cookie set: SSO_SESSION on intranet.meridiancorp.local (HttpOnly, expires 2024-10-22T20:33:42Z)",
+      "description": "[Chrome] Cookie set: SSO_SESSION on intranet.meridiancorp.local (Name: SSO_SESSION, Value: mer_sid_9a2f4b8c, Domain: intranet.meridiancorp.local, HttpOnly, Secure, SameSite=None, expires: 2024-10-22T20:33:42Z)",
       "correctOrder": 3,
       "isRelevant": true,
-      "explanation": "Single sign-on authentication established a session cookie, confirming the user was logged into the intranet.",
+      "explanation": "Single sign-on authentication established a session cookie, confirming the user was logged into the intranet. The Secure and SameSite=None flags indicate this cookie supports cross-site requests, relevant for API calls.",
       "relationships": [
         { "type": "after", "targetEventId": "evt-002-04", "label": "Single sign-on authentication typically follows reaching the authenticated portal." },
-        { "type": "before", "targetEventId": "evt-002-06", "label": "Authenticated sessions often enable subsequent protected internal searches." }
+        { "type": "before", "targetEventId": "evt-002-07", "label": "Authenticated sessions often enable subsequent protected internal searches." }
       ],
       "hints": [
         "Think about which artefact is set once a portal login completes.",
@@ -80,19 +80,19 @@
       "id": "evt-002-06",
       "timestamp": "2024-10-22T16:34:58Z",
       "type": "search",
-      "description": "Google search: \"best lunch spots near office downtown\"",
+      "description": "[Chrome] Google search: \"best lunch spots near city office downtown\"",
       "correctOrder": 0,
       "isRelevant": false,
-      "explanation": "Unrelated personal search for lunch options."
+      "explanation": "Unrelated personal search for lunch options — a normal midday browsing pattern during a work break."
     },
     {
       "id": "evt-002-07",
       "timestamp": "2024-10-22T16:35:01Z",
       "type": "search",
-      "description": "Intranet search: \"Q3 2024 financial report confidential\"",
+      "description": "[Chrome] Intranet search: \"Q3 2024 financial report confidential\" (search engine: Meridian Corp Internal Search, results: 3)",
       "correctOrder": 4,
       "isRelevant": true,
-      "explanation": "An internal search for confidential financial material indicates deliberate targeting of sensitive files.",
+      "explanation": "An internal search for confidential financial material on the corporate search engine indicates deliberate targeting of sensitive files. The result count of 3 suggests the document was located.",
       "relationships": [
         { "type": "before", "targetEventId": "evt-002-08", "label": "An internal search for sensitive material commonly precedes opening the exact report." }
       ],
@@ -106,10 +106,10 @@
       "id": "evt-002-08",
       "timestamp": "2024-10-22T16:35:47Z",
       "type": "history",
-      "description": "Visited https://intranet.meridiancorp.local/finance/reports/q3-2024 (title: Q3 2024 Financial Report)",
+      "description": "[Chrome] Visited https://intranet.meridiancorp.local/finance/reports/q3-2024 (title: Q3 2024 Financial Report, access level: Restricted, referrer: https://intranet.meridiancorp.local/)",
       "correctOrder": 5,
       "isRelevant": true,
-      "explanation": "The search returned the restricted finance report page in the browser history.",
+      "explanation": "The search returned the restricted finance report page in the browser history. The 'access level: Restricted' tag is a key forensic indicator of the document's sensitivity classification.",
       "relationships": [
         { "type": "before", "targetEventId": "evt-002-09", "label": "Opening a report page frequently precedes downloading the document." }
       ],
@@ -123,12 +123,11 @@
       "id": "evt-002-09",
       "timestamp": "2024-10-22T16:36:22Z",
       "type": "download",
-      "description": "Downloaded Q3_2024_Financial_Report_CONFIDENTIAL.pdf to C:\\Users\\SharedWS\\Downloads\\ (1.8 MB, Chrome)",
+      "description": "[Chrome] Downloaded Q3_2024_Financial_Report_CONFIDENTIAL.pdf to C:\\Users\\SharedWS\\Downloads\\ (size: 1.8 MB, browser: Chrome 130.0.6099.130, MIME: application/pdf, etag: \"f3a2c1d4-5b6e-7f8a-9c0d-1e2f3a4b5c6d\")",
       "correctOrder": 6,
       "isRelevant": true,
-      "explanation": "The confidential PDF was saved locally, creating a key exfiltration artefact on the shared workstation.",
+      "explanation": "The confidential PDF was saved locally, creating a critical exfiltration artefact. The download destination (SharedWS) on a shared workstation is a significant forensic finding — anyone with access to that machine can retrieve the file.",
       "relationships": [
-        { "type": "before", "targetEventId": "evt-002-10", "label": "Saving a document often precedes attempts to move or share it elsewhere." },
         { "type": "before", "targetEventId": "evt-002-11", "label": "Downloading sensitive material often precedes cloud transfer or sharing activity." }
       ],
       "hints": [
@@ -141,22 +140,22 @@
       "id": "evt-002-10",
       "timestamp": "2024-10-22T16:37:33Z",
       "type": "history",
-      "description": "Visited https://mail.google.com/mail/u/0/ (title: Gmail – Inbox)",
+      "description": "[Chrome] Visited https://mail.google.com/mail/u/0/ (title: Gmail – Inbox, session active)",
       "correctOrder": 0,
       "isRelevant": false,
-      "explanation": "Unrelated email checking activity."
+      "explanation": "Unrelated email checking activity — a common personal browsing action that follows normal work patterns and is not relevant to the file download investigation."
     },
     {
       "id": "evt-002-11",
       "timestamp": "2024-10-22T16:38:09Z",
       "type": "history",
-      "description": "Visited https://www.google.com/drive/ (title: Google Drive – Home)",
+      "description": "[Chrome] Visited https://drive.google.com/ (title: Google Drive – Home, session active, storage used: 2.4 GB of 15 GB)",
       "correctOrder": 7,
       "isRelevant": true,
-      "explanation": "Shortly after the download, the user opened a cloud storage service, suggesting intent to upload or transfer the file.",
+      "explanation": "Shortly after the download, the user opened Google Drive, suggesting intent to upload or transfer the downloaded file. The storage usage figure confirms an active, established account.",
       "relationships": [
         { "type": "after", "targetEventId": "evt-002-09", "label": "Opening cloud storage shortly after a sensitive download can suggest transfer intent." },
-        { "type": "before", "targetEventId": "evt-002-12", "label": "Visiting cloud storage can precede cookie refresh during account use." }
+        { "type": "before", "targetEventId": "evt-002-12", "label": "Visiting cloud storage commonly precedes cookie refresh during account use." }
       ],
       "hints": [
         "Think about where someone might take a file shortly after downloading a confidential document.",
@@ -168,16 +167,16 @@
       "id": "evt-002-12",
       "timestamp": "2024-10-22T16:38:51Z",
       "type": "cookie",
-      "description": "Cookie refreshed: SID on .google.com (Secure, SameSite=None)",
+      "description": "[Chrome] Cookie refreshed: SID on .google.com (Name: SID, Domain: .google.com, Value: [REDACTED], Secure, HttpOnly, SameSite=None, SameSite=None requires Secure, expires: 2024-11-21T16:38:51Z)",
       "correctOrder": 8,
       "isRelevant": true,
-      "explanation": "An active Google session cookie confirms the cloud storage account was already authenticated during the transfer window.",
+      "explanation": "The Google session cookie was refreshed, confirming the cloud storage account was actively authenticated during the timeframe the user accessed Drive. The SameSite=None and Secure flags indicate the cookie supports cross-site requests — consistent with API usage from Drive.",
       "relationships": [
-        { "type": "after", "targetEventId": "evt-002-11", "label": "Cloud storage cookie refresh commonly follows visiting the service." }
+        { "type": "after", "targetEventId": "evt-002-11", "label": "Cloud storage cookie refresh commonly follows visiting the Drive service." }
       ],
       "hints": [
         "Think about which cookie activity confirms an active cloud account.",
-        "A refreshed cloud session cookie suggests active authenticated use of the service.",
+        "A refreshed Google session cookie suggests active authenticated use of the Drive service.",
         "The Google SID cookie refresh should be placed last, immediately after the Drive home page visit."
       ]
     },
@@ -185,10 +184,10 @@
       "id": "evt-002-13",
       "timestamp": "2024-10-22T16:39:15Z",
       "type": "search",
-      "description": "Google search: \"youtube trending videos today\"",
+      "description": "[Chrome] Google search: \"youtube trending videos today\"",
       "correctOrder": 0,
       "isRelevant": false,
-      "explanation": "Unrelated entertainment browsing."
+      "explanation": "Unrelated entertainment browsing after completing the file access sequence — normal break-time activity."
     }
   ]
 }
