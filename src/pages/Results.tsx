@@ -56,27 +56,22 @@ export function Results() {
         <PageHeader
           label="Exercise Results"
           title={investigationCase?.title ?? 'Timeline Results'}
-          description="Your submission is evaluated in two independent stages — evidence selection and timeline ordering — each measuring a separate competency."
         />
 
         <Card as="section" className="mt-8" aria-labelledby="stage1-heading">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-edu-600">
-                Stage 1
-              </p>
-              <h2
-                id="stage1-heading"
-                className="edu-section-title mt-1 mb-0"
-              >
-                Evidence Selection
-              </h2>
-            </div>
-            <span className="rounded-full bg-edu-100 px-3 py-1 text-xs font-semibold text-edu-800">
-              Independent score
-            </span>
+          <h2
+            id="stage1-heading"
+            className="edu-section-title"
+          >
+            Evidence Selection Results
+          </h2>
+
+          <div className="mt-3 rounded-xl border border-edu-100 bg-edu-50/60 px-4 py-3 text-sm text-slate-700">
+            <span className="font-semibold text-edu-800">Investigation objective: </span>
+            {investigationCase?.investigationObjective ?? 'Identify which events are relevant to the investigation and which are distractor noise.'}
           </div>
-          <p className="mt-3 leading-relaxed text-slate-700">
+
+          <p className="mt-4 leading-relaxed text-slate-700">
             {selection.summary}
           </p>
 
@@ -119,20 +114,23 @@ export function Results() {
 
           <EvidenceSelectionFeedback
             title="Correctly Selected Evidence"
+            subtitle="These events are genuinely relevant to the investigation."
             items={selection.correctlySelectedEvents}
             emptyMessage="No events were correctly identified as relevant."
             variant="correct"
             ariaLabel="Correctly selected evidence"
           />
           <EvidenceSelectionFeedback
-            title="False Positives (selected but not relevant)"
+            title="False Positives"
+            subtitle="You selected these, but they are not relevant to the investigation."
             items={selection.falsePositiveEvents}
             emptyMessage="No false positives — every selected event was genuinely relevant."
             variant="incorrect"
             ariaLabel="False positive evidence"
           />
           <EvidenceSelectionFeedback
-            title="False Negatives (missed relevant evidence)"
+            title="False Negatives"
+            subtitle="You missed these relevant events."
             items={selection.falseNegativeEvents}
             emptyMessage="No false negatives — every relevant event was selected."
             variant="incorrect"
@@ -141,22 +139,12 @@ export function Results() {
         </Card>
 
         <Card as="section" className="mt-8" aria-labelledby="stage2-heading">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-edu-600">
-                Stage 2
-              </p>
-              <h2
-                id="stage2-heading"
-                className="edu-section-title mt-1 mb-0"
-              >
-                Timeline Ordering
-              </h2>
-            </div>
-            <span className="rounded-full bg-edu-100 px-3 py-1 text-xs font-semibold text-edu-800">
-              Independent score
-            </span>
-          </div>
+          <h2
+            id="stage2-heading"
+            className="edu-section-title"
+          >
+            Timeline Ordering Results
+          </h2>
           <p className="mt-3 leading-relaxed text-slate-700">
             {result.summary}
           </p>
