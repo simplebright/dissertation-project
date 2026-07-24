@@ -17,6 +17,7 @@ interface HintPanelProps {
   mode?: HintPanelMode;
   selectionHintsRevealed?: number;
   onUseSelectionHint?: () => void;
+  onHintOpened?: () => void;
 }
 
 export function HintPanel({
@@ -31,6 +32,7 @@ export function HintPanel({
   mode = 'timeline',
   selectionHintsRevealed = 0,
   onUseSelectionHint,
+  onHintOpened,
 }: HintPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
   const remaining = Math.max(totalAvailable - totalUsed, 0);
@@ -86,6 +88,7 @@ export function HintPanel({
       return;
     }
     setIsOpen(true);
+    onHintOpened?.();
   };
 
   const handleClose = () => {

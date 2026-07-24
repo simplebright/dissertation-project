@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import type { EventType, ForensicEvent } from '../types/case';
 import type { ExerciseMode } from '../types/exercise';
+import type { PersistedSessionLog } from '../utils/sessionLog';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { EmptyState } from '../components/ui/PageLayout';
@@ -21,6 +22,11 @@ import {
   loadHintState,
   saveHintState,
 } from '../utils/hintStorage';
+import {
+  createSessionLog,
+  loadSessionLog,
+  recordInteraction,
+} from '../utils/sessionLog';
 
 type FilterType = EventType | 'all';
 
@@ -248,6 +254,13 @@ export function EvidenceSelection() {
     },
   );
 
+  const sessionLogRef = useRef<PersistedSessionLog>(
+    caseId ? loadSessionLog(caseId) ?? createSessionLog(caseId) : createSessionLog('unknown'),
+  );
+  const appendSessionEvent = (input: Parameters<typeof recordInteraction>[1]) => {
+    sessionLogRef.current = recordInteraction(sessionLogRef.current, input);
+  };
+
   useEffect(() => {
     if (!caseId || !mode) {
       return;
@@ -307,20 +320,53 @@ export function EvidenceSelection() {
   }
 
   const toggleEvent = (eventId: string) => {
-    setSelectedIds((current) =>
-      current.includes(eventId)
+    const wasSelected = selectedIds.includes(eventId);
+    setSelectedIds((current) => {
+      const next = wasSelected
         ? current.filter((id) => id !== eventId)
-        : [...current, eventId],
-    );
+        : [...current, eventId];
+      appendSessionEvent({
+        type: wasSelected ? 'evidence.removed' : 'evidence.selected',
+        stage: 'selection',
+        eventId,
+        totalSelected: next.length,
+      });
+      return next;
+    });
   };
 
   const handleClearAll = () => {
+    const removedIds = [...selectedIds];
     setSelectedIds([]);
+    for (const eventId of removedIds) {
+      appendSessionEvent({
+        type: 'evidence.removed',
+        stage: 'selection',
+        eventId,
+        totalSelected: 0,
+      });
+    }
   };
 
   const handleUseSelectionHint = () => {
-    setHintsUsed((count) => Math.min(count + 1, HINT_BUDGET));
-    setSelectionHintsRevealed((count) => Math.min(count + 1, HINT_BUDGET));
+    const nextCount = Math.min(hintsUsed + 1, HINT_BUDGET);
+    setHintsUsed(nextCount);
+    const nextRevealed = Math.min(selectionHintsRevealed + 1, HINT_BUDGET);
+    setSelectionHintsRevealed(nextRevealed);
+    appendSessionEvent({
+      type: 'hint.used',
+      stage: 'selection',
+      hintLevel: nextRevealed,
+      hintsUsedSoFar: nextCount,
+    });
+  };
+
+  const handleSelectionHintOpened = () => {
+    appendSessionEvent({
+      type: 'hint.opened',
+      stage: 'selection',
+      hintsUsedSoFar: hintsUsed,
+    });
   };
 
   const handleContinue = () => {
@@ -559,6 +605,7 @@ export function EvidenceSelection() {
         totalUsed={hintsUsed}
         selectionHintsRevealed={selectionHintsRevealed}
         onUseSelectionHint={handleUseSelectionHint}
+        onHintOpened={handleSelectionHintOpened}
       />
     </main>
   );

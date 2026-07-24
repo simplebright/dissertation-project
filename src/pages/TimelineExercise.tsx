@@ -33,6 +33,7 @@ export function TimelineExercise() {
     hintEventId,
     handleSelectHintEvent,
     handleUseHint,
+    handleTimelineHintOpened,
     revealedByEvent,
     timelineEventIds,
   } = useTimelineExercise(caseId, selectedEvidenceIds);
@@ -109,6 +110,7 @@ export function TimelineExercise() {
           activeEventId={hintEventId}
           onSelectEvent={handleSelectHintEvent}
           onUseHint={handleUseHint}
+          onHintOpened={handleTimelineHintOpened}
           timelineEventIds={timelineEventIds}
           revealedByEvent={revealedByEvent}
         />

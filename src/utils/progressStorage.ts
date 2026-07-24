@@ -37,11 +37,30 @@ function isAttemptRecord(value: unknown): value is AttemptRecord {
     'selectionFPIds' in value ||
     'selectionFNIds' in value
   ) {
-    return (
-      typeof value.selectionAccuracy === 'number' &&
-      Array.isArray(value.selectionFPIds) &&
-      Array.isArray(value.selectionFNIds)
-    );
+    if (
+      typeof value.selectionAccuracy !== 'number' ||
+      !Array.isArray(value.selectionFPIds) ||
+      !Array.isArray(value.selectionFNIds)
+    ) {
+      return false;
+    }
+  }
+
+  if ('sessionLog' in value && value.sessionLog !== undefined) {
+    if (!Array.isArray(value.sessionLog)) {
+      return false;
+    }
+    for (const event of value.sessionLog) {
+      if (!isRecord(event)) {
+        return false;
+      }
+      if (typeof event.type !== 'string' || typeof event.timestamp !== 'string') {
+        return false;
+      }
+      if (event.stage !== 'selection' && event.stage !== 'timeline') {
+        return false;
+      }
+    }
   }
 
   return true;

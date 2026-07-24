@@ -13,6 +13,14 @@ import {
   loadHintState,
   saveHintState,
 } from '../utils/hintStorage';
+import {
+  clearSessionLog,
+  createSessionLog,
+  loadSessionLog,
+  recordInteraction,
+  type PersistedSessionLog,
+  type RecordInteractionInput,
+} from '../utils/sessionLog';
 import { saveAttempt } from '../utils/progressStorage';
 import type { AttemptRecord } from '../types/progress';
 import { shuffleArray } from '../utils/shuffle';
@@ -71,6 +79,16 @@ export function useTimelineExercise(
     Record<string, number>
   >({});
 
+  const sessionLogRef = useRef<PersistedSessionLog>(
+    caseId ? loadSessionLog(caseId) ?? createSessionLog(caseId) : createSessionLog('unknown'),
+  );
+  const appendSessionEvent = useCallback(
+    (input: RecordInteractionInput) => {
+      sessionLogRef.current = recordInteraction(sessionLogRef.current, input);
+    },
+    [],
+  );
+
   useEffect(() => {
     if (!caseId) {
       return;
@@ -82,6 +100,14 @@ export function useTimelineExercise(
     return () => {
       if (caseId) {
         clearHintState(caseId);
+      }
+    };
+  }, [caseId]);
+
+  useEffect(() => {
+    return () => {
+      if (caseId) {
+        clearSessionLog(caseId);
       }
     };
   }, [caseId]);
@@ -131,14 +157,31 @@ export function useTimelineExercise(
         return;
       }
       setHintEventId(eventId);
-      setHintsUsed((count) => Math.min(count + 1, HINT_BUDGET));
+      const nextCount = Math.min(hintsUsed + 1, HINT_BUDGET);
+      const nextRevealed = Math.min(currentRevealed + 1, totalLevels);
+      setHintsUsed(nextCount);
       setRevealedByEvent((prev) => ({
         ...prev,
-        [eventId]: Math.min(currentRevealed + 1, totalLevels),
+        [eventId]: nextRevealed,
       }));
+      appendSessionEvent({
+        type: 'hint.used',
+        stage: 'timeline',
+        eventId,
+        hintLevel: nextRevealed,
+        hintsUsedSoFar: nextCount,
+      });
     },
-    [hintsUsed, selectedEvents, revealedByEvent],
+    [hintsUsed, selectedEvents, revealedByEvent, appendSessionEvent],
   );
+
+  const handleTimelineHintOpened = useCallback(() => {
+    appendSessionEvent({
+      type: 'hint.opened',
+      stage: 'timeline',
+      hintsUsedSoFar: hintsUsed,
+    });
+  }, [appendSessionEvent, hintsUsed]);
 
   const handleSubmit = () => {
     if (!investigationCase) {
@@ -156,6 +199,17 @@ export function useTimelineExercise(
     const completionTime = Date.now() - startTimeRef.current;
     const accuracy = result.score / 100;
 
+    appendSessionEvent({
+      type: 'timeline.submitted',
+      stage: 'timeline',
+      metadata: {
+        score: result.score,
+        correctCount: result.correctCount,
+        incorrectCount: result.incorrectCount,
+        mistakes: result.mistakes.length,
+      },
+    });
+
     const attempt: AttemptRecord = {
       caseId: investigationCase.id,
       mode: 'practice',
@@ -170,9 +224,14 @@ export function useTimelineExercise(
       selectionAccuracy: selection.accuracy,
       selectionFPIds: selection.falsePositiveEvents.map((e) => e.id),
       selectionFNIds: selection.falseNegativeEvents.map((e) => e.id),
+      sessionLog: sessionLogRef.current.events,
     };
 
     saveAttempt(attempt);
+
+    if (investigationCase.id) {
+      clearSessionLog(investigationCase.id);
+    }
 
     navigate('/results', {
       state: {
@@ -204,6 +263,7 @@ export function useTimelineExercise(
     hintEventId,
     handleSelectHintEvent,
     handleUseHint,
+    handleTimelineHintOpened,
     revealedByEvent,
     timelineEventIds: containers[DND_CONTAINER_IDS.timeline],
   };
