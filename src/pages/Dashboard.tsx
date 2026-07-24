@@ -92,12 +92,7 @@ export function Dashboard() {
           </p>
 
           {hasData ? (
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <StatCard
-                label="Avg. Ordering Accuracy"
-                value={`${Math.round(stats.averageAccuracy * 100)}%`}
-                valueClassName="text-edu-600"
-              />
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <StatCard
                 label="Avg. Selection Accuracy"
                 value={`${insights.averageSelectionAccuracy}%`}
@@ -116,7 +111,7 @@ export function Dashboard() {
                 value={
                   insights.averageSelectionFP > 0
                     ? `${insights.averageSelectionFP.toFixed(1)} / attempt`
-                    : '—'
+                    : '0 / attempt'
                 }
                 valueClassName={
                   insights.averageSelectionFP === 0
@@ -129,7 +124,7 @@ export function Dashboard() {
                 value={
                   insights.averageSelectionFN > 0
                     ? `${insights.averageSelectionFN.toFixed(1)} / attempt`
-                    : '—'
+                    : '0 / attempt'
                 }
                 valueClassName={
                   insights.averageSelectionFN === 0
@@ -168,6 +163,57 @@ export function Dashboard() {
                 ))}
               </ul>
             </div>
+          )}
+        </Card>
+
+        <Card as="section" className="mt-8" aria-labelledby="ordering-heading">
+          <h2 id="ordering-heading" className="edu-section-title">
+            Timeline Ordering Analytics
+          </h2>
+          <p className="mt-2 text-sm text-slate-600">
+            Tracks how accurately you reconstruct the chronological order of events on the timeline.
+          </p>
+
+          {hasData ? (
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <StatCard
+                label="Avg. Ordering Accuracy"
+                value={`${Math.round(stats.averageAccuracy * 100)}%`}
+                valueClassName={
+                  Math.round(stats.averageAccuracy * 100) === 100
+                    ? 'text-emerald-600'
+                    : stats.averageAccuracy >= 0.7
+                      ? 'text-edu-600'
+                      : 'text-rose-600'
+                }
+              />
+              <StatCard
+                label="Average Score"
+                value={`${insights.averageScore}%`}
+                valueClassName={
+                  insights.averageScore === 100
+                    ? 'text-emerald-600'
+                    : insights.averageScore >= 70
+                      ? 'text-edu-600'
+                      : 'text-rose-600'
+                }
+              />
+              <StatCard
+                label="Improvement"
+                value={formatImprovement(insights.improvementDelta)}
+                valueClassName={
+                  insights.improvementDelta === null
+                    ? 'text-slate-500'
+                    : insights.improvementDelta >= 0
+                      ? 'text-emerald-600'
+                      : 'text-rose-600'
+                }
+              />
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-slate-500">
+              Analytics will appear after you complete your first case.
+            </p>
           )}
         </Card>
 
