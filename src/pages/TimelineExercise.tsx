@@ -65,7 +65,6 @@ export function TimelineExercise() {
           <EvidenceCard
             event={activeEvent}
             showTimestamp={showTimestamp}
-            mode={exerciseMode}
           />
         ) : null
       }
@@ -85,7 +84,6 @@ export function TimelineExercise() {
               title="Evidence"
               emptyMessage="All evidence placed on timeline"
               showTimestamp={showTimestamp}
-              mode={exerciseMode}
             />
           </aside>
 
@@ -96,7 +94,6 @@ export function TimelineExercise() {
               eventsById={eventsById}
               slotCount={selectedEvents.length}
               showTimestamp={showTimestamp}
-              mode={exerciseMode}
             />
           </section>
         </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { arrayMove } from '@dnd-kit/sortable';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { DND_CONTAINER_IDS } from '../constants/dnd';
@@ -48,10 +48,17 @@ export function useContainerDnd(
   resetKey: string,
 ) {
   const [containers, setContainers] = useState<ContainerState>(initialState);
+  const initialStateRef = useRef(initialState);
+
+  // Keep the ref pointed at the latest initialState so the reset effect can
+  // pick up the current value without listing `initialState` (an object) in
+  // its dependency array. Listing it would cause an infinite render loop when
+  // the caller creates a fresh object on every render.
+  initialStateRef.current = initialState;
 
   useEffect(() => {
-    setContainers(initialState);
-  }, [resetKey, initialState]);
+    setContainers(initialStateRef.current);
+  }, [resetKey]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;

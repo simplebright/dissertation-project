@@ -60,6 +60,7 @@ export function HintPanel({
     ? revealedByEvent?.[activeEvent.id] ?? 0
     : 0;
   const revealedLevels = !isSelectionMode ? hintQueue.slice(0, revealedCount) : [];
+  const activeEventHasNoHints = !isSelectionMode && activeEvent !== null && hintQueue.length === 0;
 
   const revealedSelectionHints = !isSelectionMode
     ? []
@@ -125,7 +126,7 @@ export function HintPanel({
       className="fixed bottom-24 right-4 z-30 sm:bottom-28 sm:right-6"
     >
       {isOpen ? (
-        <div className="w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-edu-200 bg-white shadow-xl shadow-blue-900/15 sm:w-96">
+        <div className="flex max-h-[calc(100vh-7rem)] w-80 max-w-[calc(100vw-2rem)] flex-col rounded-2xl border border-edu-200 bg-white shadow-xl shadow-blue-900/15 sm:w-96">
           <div className="flex items-center justify-between border-b border-edu-100 px-4 py-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-edu-600">
@@ -157,7 +158,7 @@ export function HintPanel({
             </button>
           </div>
 
-          <div className="space-y-4 p-4">
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
             {!isSelectionMode && (
               <div>
                 <label
@@ -283,11 +284,13 @@ export function HintPanel({
                   ? selectionHintsRevealed >= EVIDENCE_SELECTION_HINTS.length
                     ? 'All reasoning hints revealed'
                     : `Reveal reasoning hint ${selectionHintsRevealed + 1}`
-                  : activeEvent
-                    ? revealedCount >= hintQueue.length
-                      ? 'All levels revealed'
-                      : `Reveal hint level ${revealedCount + 1}`
-                    : 'Select an event first'}
+              : activeEvent
+                ? activeEventHasNoHints
+                  ? 'No hints available for this event'
+                  : revealedCount >= hintQueue.length
+                    ? 'All levels revealed'
+                    : `Reveal hint level ${revealedCount + 1}`
+                : 'Select an event first'}
             </button>
 
             <p className="text-center text-[10px] text-slate-400">

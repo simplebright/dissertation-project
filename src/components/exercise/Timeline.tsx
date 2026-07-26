@@ -8,7 +8,6 @@ interface TimelineProps {
   eventsById: Record<string, ForensicEvent>;
   slotCount: number;
   showTimestamp?: boolean;
-  mode?: 'beginner' | 'advanced';
 }
 
 export function Timeline({
@@ -17,20 +16,18 @@ export function Timeline({
   eventsById,
   slotCount,
   showTimestamp = true,
-  mode = 'beginner',
 }: TimelineProps) {
   const emptySlotCount = Math.max(slotCount - itemIds.length, 0);
 
   return (
-      <SortableEvidenceList
-        containerId={containerId}
-        itemIds={itemIds}
-        eventsById={eventsById}
-        title="Timeline"
-        emptyMessage="Drag evidence here to build your timeline"
-        showTimestamp={showTimestamp}
-        mode={mode}
-        footer={
+    <SortableEvidenceList
+      containerId={containerId}
+      itemIds={itemIds}
+      eventsById={eventsById}
+      title="Timeline"
+      emptyMessage="Drag evidence here to build your timeline"
+      showTimestamp={showTimestamp}
+      footer={
         emptySlotCount > 0 ? (
           <div className="mt-1 flex flex-col gap-3" aria-label="Empty timeline slots">
             {Array.from({ length: emptySlotCount }, (_, index) => {

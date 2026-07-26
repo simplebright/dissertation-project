@@ -153,7 +153,11 @@ export function useTimelineExercise(
       const event = selectedEvents.find((e) => e.id === eventId);
       const totalLevels = event?.hints?.length ?? 0;
       const currentRevealed = revealedByEvent[eventId] ?? 0;
-      if (totalLevels > 0 && currentRevealed >= totalLevels) {
+      // Distractor events (and any event with no `hints` array) can't be hinted,
+      // and once all levels for an event are already shown, the budget is
+      // depleted for that event. Without this guard we would silently increment
+      // `hintsUsed` and burn a budget slot for nothing.
+      if (totalLevels === 0 || currentRevealed >= totalLevels) {
         return;
       }
       setHintEventId(eventId);

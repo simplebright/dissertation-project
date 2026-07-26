@@ -7,7 +7,12 @@ import type {
 import { buildEventsById } from './events';
 
 export function getCorrectOrder(events: ForensicEvent[]): string[] {
+  // Distractor events (isRelevant: false) are intentionally NOT part of the
+  // narrative timeline — including them would corrupt the ground truth
+  // (every distractor shares correctOrder 0 and would be sorted ahead of the
+  // real investigation events).
   return [...events]
+    .filter((event) => event.isRelevant)
     .sort((a, b) => a.correctOrder - b.correctOrder)
     .map((event) => event.id);
 }
@@ -251,16 +256,26 @@ export function checkTimelineAnswer(
   currentOrder: string[],
   events: ForensicEvent[],
 ): TimelineAnswerResult {
-  const totalCount = events.length;
+  // Distractor events are never part of the investigation narrative — exclude
+  // them here so the scoring, correctness count, and "isComplete" definition
+  // all reflect only the relevant story.
+  const relevantEvents = events.filter((event) => event.isRelevant);
+  const totalCount = relevantEvents.length;
   const eventsById = buildEventsById(events);
-  const correctOrder = getCorrectOrder(events);
-  const isComplete = currentOrder.length === totalCount;
+  const relevantEventsById = buildEventsById(relevantEvents);
+  const correctOrder = getCorrectOrder(relevantEvents);
+  // Completeness: did the student place every relevant event? Distractors
+  // that the student dragged onto the timeline shouldn't count against the
+  // student — they're not part of the investigation narrative at all.
+  const placedIds = new Set(currentOrder.filter((id) => Boolean(id)));
+  const everyRelevantPlaced = correctOrder.every((id) => placedIds.has(id));
+  const isComplete = totalCount === 0 || everyRelevantPlaced;
 
   const feedback = correctOrder.map((expectedEventId, index) =>
     buildPositionFeedback(
       index + 1,
       currentOrder[index],
-      eventsById[expectedEventId],
+      relevantEventsById[expectedEventId],
       eventsById,
     ),
   );
@@ -269,7 +284,7 @@ export function checkTimelineAnswer(
   const incorrectCount = totalCount - correctCount;
   const score =
     totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
-  const mistakes = buildMistakeRecords(feedback, eventsById);
+  const mistakes = buildMistakeRecords(feedback, relevantEventsById);
 
   return {
     score,
