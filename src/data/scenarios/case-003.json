@@ -2,6 +2,7 @@
   "id": "case-003",
   "title": "Cross-Browser Activity Correlation",
   "difficulty": "Advanced",
+  "attackType": "Benign Activity",
   "description": "Evidence spans Chrome and Firefox profiles on the same machine. Build a unified timeline to correlate visits, searches, and tab activity across browsers.",
   "investigationObjective": "Build expertise in cross-browser correlation techniques by integrating artefacts from multiple browser profiles to reconstruct a unified investigative timeline.",
   "events": [
@@ -11,8 +12,7 @@
       "type": "history",
       "description": "[Firefox] Visited https://www.amazon.co.uk/gift-finder (title: Amazon.co.uk – Gift Finder, visit count: 1, first visit: 2024-09-14)",
       "correctOrder": 0,
-      "isRelevant": false,
-      "explanation": "Unrelated online shopping activity — a single-visit Amazon page with no repeat engagement, consistent with casual browsing."
+      "isRelevant": false
     },
     {
       "id": "evt-003-02",
@@ -21,6 +21,7 @@
       "description": "[Chrome] Visited https://jira.techflow.io/browse/DEPLOY-482 (title: DEPLOY-482 – Production Release | TechFlow Jira, visit count: 3, last visit: 2024-09-13, assignee: alex.thompson)",
       "correctOrder": 1,
       "isRelevant": true,
+      "killChainStage": "Reconnaissance",
       "explanation": "Chrome activity began with a Jira ticket for a production release, anchoring the investigation timeline. The ticket assignee (alex.thompson) ties the activity to a specific user account.",
       "relationships": [
         { "type": "before", "targetEventId": "evt-003-04", "label": "The Jira ticket often motivates related research or preparation in another browser." },
@@ -38,8 +39,7 @@
       "type": "search",
       "description": "[Firefox] Google search: \"best coffee shops Edinburgh city centre\"",
       "correctOrder": 0,
-      "isRelevant": false,
-      "explanation": "Unrelated personal search for coffee shops — a common midday break search pattern unrelated to any technical investigation."
+      "isRelevant": false
     },
     {
       "id": "evt-003-04",
@@ -48,6 +48,7 @@
       "description": "[Firefox] Google search: \"kubernetes rolling update zero downtime deployment\" (engine: Google, locale: en-GB)",
       "correctOrder": 2,
       "isRelevant": true,
+      "killChainStage": "Reconnaissance",
       "explanation": "Firefox shows a technical search consistent with preparing for the deployment referenced in Chrome. The en-GB locale confirms the same user context across browsers.",
       "relationships": [
         { "type": "before", "targetEventId": "evt-003-05", "label": "A technical search commonly leads to the referenced documentation page." }
@@ -65,6 +66,7 @@
       "description": "[Firefox] Visited https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-intro/ (title: Kubernetes: Performing a Rolling Update, load time: 1.2s, cached: false)",
       "correctOrder": 3,
       "isRelevant": true,
+      "killChainStage": "Reconnaissance",
       "explanation": "The Firefox search led to official Kubernetes documentation on rolling updates. The uncached load time and slow connection (1.2s for a doc page) may indicate the user spent time reading rather than just loading.",
       "relationships": [
         { "type": "before", "targetEventId": "evt-003-07", "label": "Documentation research in one browser often continues alongside authentication in another." }
@@ -81,8 +83,7 @@
       "type": "search",
       "description": "[Firefox] Google search: \"twitter trending topics today uk\"",
       "correctOrder": 0,
-      "isRelevant": false,
-      "explanation": "Unrelated social media browsing — checking trending topics during a break, a common non-work activity pattern."
+      "isRelevant": false
     },
     {
       "id": "evt-003-07",
@@ -91,6 +92,7 @@
       "description": "[Chrome] Cookie set: JSESSIONID on jira.techflow.io (Name: JSESSIONID, Value: 9A3F2B1C4D5E6F7A8B9C0D1E2F3A4B5C, Domain: jira.techflow.io, HttpOnly, SameSite=Relaxed, Path=/, expires: session)",
       "correctOrder": 4,
       "isRelevant": true,
+      "killChainStage": "Delivery",
       "explanation": "A fresh Jira session cookie in Chrome indicates the browser re-authenticated to Jira during the deployment review. The JSESSIONID value format matches the Atlassian standard session token pattern.",
       "relationships": [
         { "type": "after", "targetEventId": "evt-003-02", "label": "Session cookies usually appear after accessing the target application." },
@@ -108,8 +110,7 @@
       "type": "history",
       "description": "[Firefox] Visited https://www.netflix.com/browse (title: Netflix – Browse, profile: alex_t, autoplay: on)",
       "correctOrder": 0,
-      "isRelevant": false,
-      "explanation": "Unrelated entertainment streaming activity — the Netflix profile name (alex_t) matches the Jira assignee, but Netflix browsing is clearly personal and unrelated to the deployment investigation."
+      "isRelevant": false
     },
     {
       "id": "evt-003-09",
@@ -118,6 +119,7 @@
       "description": "[Chrome] Downloaded deploy-config-prod-v2.4.yaml to C:\\Users\\adevains\\Downloads\\ (size: 4.2 KB, type: text/plain, browser: Chrome 130.0.6099.130, etag: \"8c3f1a2b-4d5e-6f7a-8b9c-0d1e2f3a4b5c\", accessed: 2024-09-14T10:23:20Z)",
       "correctOrder": 5,
       "isRelevant": true,
+      "killChainStage": "Exploitation",
       "explanation": "A production deployment configuration file was downloaded via Chrome, creating a critical artefact. The file was accessed almost immediately after download (accessed: 2024-09-14T10:23:20Z), indicating the user opened or used it right away.",
       "relationships": [
         { "type": "after", "targetEventId": "evt-003-07", "label": "Downloading protected artefacts often follows an authenticated session." },
@@ -135,8 +137,7 @@
       "type": "search",
       "description": "[Firefox] Google search: \"stackoverflow error handling react useeffect cleanup\"",
       "correctOrder": 0,
-      "isRelevant": false,
-      "explanation": "Unrelated programming Q&A research — a common developer behaviour unrelated to the deployment investigation."
+      "isRelevant": false
     },
     {
       "id": "evt-003-11",
@@ -145,6 +146,7 @@
       "description": "[Chrome] Google search: \"techflow internal wiki deployment checklist SOP\" (engine: Google, locale: en-GB, signed-in: alex.thompson@techflow.io)",
       "correctOrder": 6,
       "isRelevant": true,
+      "killChainStage": "Exploitation",
       "explanation": "Chrome was used to locate the internal deployment checklist on the company wiki. The signed-in Google account (alex.thompson@techflow.io) matches the Jira assignee, confirming the same user across Chrome, Firefox, and the Google account.",
       "relationships": [
         { "type": "before", "targetEventId": "evt-003-12", "label": "A deployment checklist search typically leads to the checklist page." }
@@ -162,6 +164,7 @@
       "description": "[Chrome] Visited https://wiki.techflow.io/display/OPS/Production+Deployment+Checklist (title: OPS – Production Deployment Checklist, author: ops-team, last modified: 2024-09-10, version: 3.2, access level: Internal)",
       "correctOrder": 7,
       "isRelevant": true,
+      "killChainStage": "Exploitation",
       "explanation": "The internal wiki checklist page was accessed immediately after the Chrome search. The page metadata (author, version 3.2, last modified 2024-09-10) provides forensic context about the document's currency and ownership.",
       "relationships": [
         { "type": "before", "targetEventId": "evt-003-14", "label": "Checklist access in Chrome can correlate with wiki authentication in Firefox." }
@@ -178,8 +181,7 @@
       "type": "history",
       "description": "[Firefox] Visited https://www.linkedin.com/feed (title: LinkedIn – Feed, profile: Alex Thompson, connection count: 342)",
       "correctOrder": 0,
-      "isRelevant": false,
-      "explanation": "Unrelated professional networking activity — checking LinkedIn during a development session, a common non-work browsing pattern."
+      "isRelevant": false
     },
     {
       "id": "evt-003-14",
@@ -188,6 +190,7 @@
       "description": "[Firefox] Cookie set: wiki_session on wiki.techflow.io (Name: wiki_session, Value: fx_a1b2c3d4e5f6, Domain: wiki.techflow.io, HttpOnly, SameSite=Strict, Path=/, expires: 2024-09-21T10:28:54Z)",
       "correctOrder": 8,
       "isRelevant": true,
+      "killChainStage": "Installation",
       "explanation": "Firefox independently authenticated to the wiki using a different session cookie than Chrome, demonstrating parallel cross-browser access to internal resources. The session expiry in 7 days and Strict SameSite indicate a deliberate persistent login.",
       "relationships": [
         { "type": "after", "targetEventId": "evt-003-12", "label": "Wiki authentication in Firefox can align with Chrome wiki access." },
@@ -206,6 +209,7 @@
       "description": "[Firefox] Visited https://ci.techflow.io/job/production-deploy/ (title: Jenkins – production-deploy #117, build status: SUCCESS, duration: 4m 23s, triggered by: alex.thompson)",
       "correctOrder": 9,
       "isRelevant": true,
+      "killChainStage": "Installation",
       "explanation": "Firefox navigated to the Jenkins CI job page, indicating the deployment pipeline was monitored from a second browser. The build status (SUCCESS) and the trigger user (alex.thompson) confirm this is an active, completed deployment under the same user account.",
       "relationships": [
         { "type": "after", "targetEventId": "evt-003-14", "label": "CI monitoring often follows authentication to supporting resources." },
@@ -224,6 +228,7 @@
       "description": "[Firefox] Downloaded jenkins-build-117-console.log to C:\\Users\\adevains\\Downloads\\ (size: 128 KB, type: text/plain, browser: Firefox 130.0, MIME: text/plain, last modified: 2024-09-14T10:33:48Z)",
       "correctOrder": 10,
       "isRelevant": true,
+      "killChainStage": "Actions",
       "explanation": "The Jenkins console log was saved in Firefox, completing the cross-browser evidence chain for the deployment event. The log file was last modified at the exact same timestamp as the download, confirming a freshly generated build artefact.",
       "relationships": [
         { "type": "after", "targetEventId": "evt-003-15", "label": "Saving a console log often follows monitoring the related CI job page." }
@@ -240,8 +245,7 @@
       "type": "search",
       "description": "[Firefox] Google search: \"how to tie a half-Windsor knot\"",
       "correctOrder": 0,
-      "isRelevant": false,
-      "explanation": "Unrelated personal grooming query — a random non-technical search during or after the deployment session, unrelated to any investigation activity."
+      "isRelevant": false
     },
     {
       "id": "evt-003-18",
@@ -250,6 +254,7 @@
       "description": "[Chrome] Visited https://jira.techflow.io/browse/DEPLOY-482 (title: DEPLOY-482 – Production Release, status: RESOLVED, resolution: Released, build: #117)",
       "correctOrder": 11,
       "isRelevant": true,
+      "killChainStage": "Actions",
       "explanation": "Chrome returned to the Jira ticket after the deployment completed, confirming the release was finalised and the ticket status updated to RESOLVED with build #117 — matching the Jenkins job number.",
       "relationships": [
         { "type": "after", "targetEventId": "evt-003-16", "label": "Returning to a Jira ticket after CI monitoring confirms the deployment loop is complete." }

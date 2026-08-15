@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { HINT_BUDGET } from '../constants/hints';
 import { DND_CONTAINER_IDS } from '../constants/dnd';
 import { getCaseById } from '../data/caseRegistry';
 import type { ForensicEvent, InvestigationCase } from '../types/case';
+import type { ExerciseMode } from '../types/exercise';
 import { checkTimelineAnswer } from '../utils/checkTimelineAnswer';
 import { evaluateEvidenceSelection } from '../utils/evaluateEvidenceSelection';
 import { buildEventsById } from '../utils/events';
+import { isExerciseLocationState } from '../utils/exerciseMode';
 import {
   clearHintState,
   loadHintState,
@@ -26,38 +28,30 @@ import type { AttemptRecord } from '../types/progress';
 import { shuffleArray } from '../utils/shuffle';
 import { useContainerDnd } from './useContainerDnd';
 
+// Resolves every event on the investigation timeline (all isRelevant events),
+// independent of what the learner picked during evidence selection. Decoupling
+// the timeline from the prior selection means the grading here measures pure
+// sequencing ability — a learner who missed an event during selection still
+// gets a chance to place it on the timeline, and timeline scoring is no longer
+// contaminated by upstream selection mistakes.
+function resolveTimelineEvents(
+  investigationCase: InvestigationCase | undefined,
+): ForensicEvent[] {
+  if (!investigationCase) {
+    return [];
+  }
+  return investigationCase.events.filter((event) => event.isRelevant);
+}
+
 function createInitialContainers(
-  selectedEvents: ForensicEvent[],
+  timelineEvents: ForensicEvent[],
 ): Record<string, string[]> {
   return {
-    [DND_CONTAINER_IDS.evidence]: shuffleArray(selectedEvents).map(
+    [DND_CONTAINER_IDS.evidence]: shuffleArray(timelineEvents).map(
       (event) => event.id,
     ),
     [DND_CONTAINER_IDS.timeline]: [],
   };
-}
-
-function resolveSelectedEvents(
-  investigationCase: InvestigationCase | undefined,
-  selectedEvidenceIds: readonly string[] | undefined,
-): ForensicEvent[] {
-  if (!investigationCase || !selectedEvidenceIds) {
-    return [];
-  }
-  const caseEventIds = new Set(investigationCase.events.map((event) => event.id));
-  const seen = new Set<string>();
-  const resolved: ForensicEvent[] = [];
-  for (const id of selectedEvidenceIds) {
-    if (!caseEventIds.has(id) || seen.has(id)) {
-      continue;
-    }
-    const event = investigationCase.events.find((item) => item.id === id);
-    if (event) {
-      resolved.push(event);
-      seen.add(id);
-    }
-  }
-  return resolved;
 }
 
 export function useTimelineExercise(
@@ -65,6 +59,11 @@ export function useTimelineExercise(
   selectedEvidenceIds: readonly string[] | undefined,
 ) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const incomingExerciseState = isExerciseLocationState(location.state)
+    ? location.state
+    : undefined;
+  const incomingExerciseMode: ExerciseMode | undefined = incomingExerciseState?.mode;
   const investigationCase = caseId ? getCaseById(caseId) : undefined;
   const startTimeRef = useRef(Date.now());
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
@@ -112,19 +111,23 @@ export function useTimelineExercise(
     };
   }, [caseId]);
 
-  const selectedEvents = useMemo(
-    () => resolveSelectedEvents(investigationCase, selectedEvidenceIds),
-    [investigationCase, selectedEvidenceIds],
+  // Timeline inputs come from every relevant event in the case — independent
+  // of what the learner chose during evidence selection. Selection accuracy is
+  // still graded on submit via `selectedEvidenceIds` against the full event
+  // list, but the ordering task itself is no longer bound to the prior stage.
+  const timelineEvents = useMemo(
+    () => resolveTimelineEvents(investigationCase),
+    [investigationCase],
   );
 
   const eventsById = useMemo<Record<string, ForensicEvent>>(
-    () => buildEventsById(selectedEvents),
-    [selectedEvents],
+    () => buildEventsById(timelineEvents),
+    [timelineEvents],
   );
 
   const initialContainers = useMemo(
-    () => createInitialContainers(selectedEvents),
-    [selectedEvents],
+    () => createInitialContainers(timelineEvents),
+    [timelineEvents],
   );
 
   const { containers, handleDragEnd: onDragEnd } = useContainerDnd(
@@ -150,14 +153,10 @@ export function useTimelineExercise(
       if (hintsUsed >= HINT_BUDGET) {
         return;
       }
-      const event = selectedEvents.find((e) => e.id === eventId);
+      const event = timelineEvents.find((e) => e.id === eventId);
       const totalLevels = event?.hints?.length ?? 0;
       const currentRevealed = revealedByEvent[eventId] ?? 0;
-      // Distractor events (and any event with no `hints` array) can't be hinted,
-      // and once all levels for an event are already shown, the budget is
-      // depleted for that event. Without this guard we would silently increment
-      // `hintsUsed` and burn a budget slot for nothing.
-      if (totalLevels === 0 || currentRevealed >= totalLevels) {
+      if (totalLevels > 0 && currentRevealed >= totalLevels) {
         return;
       }
       setHintEventId(eventId);
@@ -176,7 +175,7 @@ export function useTimelineExercise(
         hintsUsedSoFar: nextCount,
       });
     },
-    [hintsUsed, selectedEvents, revealedByEvent, appendSessionEvent],
+    [hintsUsed, timelineEvents, revealedByEvent, appendSessionEvent],
   );
 
   const handleTimelineHintOpened = useCallback(() => {
@@ -194,7 +193,7 @@ export function useTimelineExercise(
 
     const result = checkTimelineAnswer(
       containers[DND_CONTAINER_IDS.timeline],
-      selectedEvents,
+      timelineEvents,
     );
     const selection = evaluateEvidenceSelection(
       selectedEvidenceIds ?? [],
@@ -237,17 +236,22 @@ export function useTimelineExercise(
       clearSessionLog(investigationCase.id);
     }
 
-    navigate('/results', {
+    navigate(`/exercise/${investigationCase.id}/kill-chain`, {
       state: {
-        result,
-        selection,
-        caseId: investigationCase.id,
-        completionTimeMs: completionTime,
-        hintsUsed,
-        hintBudget: HINT_BUDGET,
-        mistakes: result.mistakes,
-        completedAt: attempt.completedAt,
+        mode: incomingExerciseMode ?? 'beginner',
+        selectedEvidenceIds: selectedEvidenceIds ?? [],
+        upstreamResults: {
+          result,
+          selection,
+          caseId: investigationCase.id,
+          completionTimeMs: completionTime,
+          hintsUsed,
+          hintBudget: HINT_BUDGET,
+          mistakes: result.mistakes,
+          completedAt: attempt.completedAt,
+        },
       },
+      replace: true,
     });
   };
 
@@ -255,7 +259,7 @@ export function useTimelineExercise(
 
   return {
     investigationCase,
-    selectedEvents,
+    selectedEvents: timelineEvents,
     eventsById,
     containers,
     activeEvent,

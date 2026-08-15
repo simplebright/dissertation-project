@@ -1,4 +1,6 @@
+import type { AttackInferenceResult } from './attackInferenceResult';
 import type { EvidenceSelectionResult } from './evidenceSelection';
+import type { KillChainAnswerResult } from './killChainMapping';
 import type { MistakeRecord } from './mistake';
 import type { TimelineAnswerResult } from './timeline';
 
@@ -21,4 +23,14 @@ export interface ResultsLocationState {
   hintBudget: number;
   mistakes: MistakeRecord[];
   completedAt: string;
+  /**
+   * Stage 3 — Cyber Kill Chain mapping accuracy and per-event feedback.
+   * Optional so older flows that stop after Stage 2 still validate.
+   */
+  killChainResult?: KillChainAnswerResult;
+  /**
+   * Stage 4 — Attack Inference outcome with educational explanation.
+   * Optional so older flows that stop after Stage 3 still validate.
+   */
+  attackInferenceResult?: AttackInferenceResult;
 }

@@ -5,8 +5,10 @@ import type {
   AttemptHistoryEntry,
   AttemptRecord,
   DashboardStats,
+  InvestigationStage,
   LearningInsights,
   ProgressData,
+  WeakestStageEntry,
 } from '../types/progress';
 import { isRecord } from './guards';
 
@@ -61,6 +63,23 @@ function isAttemptRecord(value: unknown): value is AttemptRecord {
         return false;
       }
     }
+  }
+
+  if (
+    'killChainAccuracy' in value &&
+    value.killChainAccuracy !== undefined &&
+    typeof value.killChainAccuracy !== 'number'
+  ) {
+    return false;
+  }
+
+  if (
+    'attackInferenceCorrect' in value &&
+    value.attackInferenceCorrect !== undefined &&
+    value.attackInferenceCorrect !== null &&
+    typeof value.attackInferenceCorrect !== 'boolean'
+  ) {
+    return false;
   }
 
   return true;
@@ -182,6 +201,53 @@ export function updateAttemptConfidence(
   return updatedAttempt;
 }
 
+/**
+ * Updates a previously-saved attempt with results from later investigation
+ * stages (Kill Chain accuracy and Attack Inference correctness). Matches
+ * the attempt by caseId + completedAt, the same key used elsewhere. Only
+ * fields explicitly provided in `patch` are overwritten; any field set to
+ * `undefined` is preserved.
+ */
+export function updateAttemptAfter(
+  caseId: string,
+  completedAt: string,
+  patch: {
+    killChainAccuracy?: number;
+    attackInferenceCorrect?: boolean | null;
+  },
+): AttemptRecord | undefined {
+  const progress = getProgress();
+  let updatedAttempt: AttemptRecord | undefined;
+
+  const updatedAttempts = progress.attempts.map((attempt) => {
+    if (attempt.caseId !== caseId || attempt.completedAt !== completedAt) {
+      return attempt;
+    }
+
+    const merged: AttemptRecord = {
+      ...attempt,
+      ...(patch.killChainAccuracy !== undefined
+        ? { killChainAccuracy: patch.killChainAccuracy }
+        : {}),
+      ...(patch.attackInferenceCorrect !== undefined
+        ? { attackInferenceCorrect: patch.attackInferenceCorrect }
+        : {}),
+    };
+
+    updatedAttempt = merged;
+    return merged;
+  });
+
+  if (updatedAttempt) {
+    localStorage.setItem(
+      PROGRESS_STORAGE_KEY,
+      JSON.stringify({ attempts: updatedAttempts }),
+    );
+  }
+
+  return updatedAttempt;
+}
+
 function getLatestAttemptsByCase(
   attempts: AttemptRecord[],
 ): AttemptRecord[] {
@@ -222,6 +288,8 @@ export function getDashboardStats(): DashboardStats {
       averageConfidence: 0,
       progressPercent: 0,
       averageSelectionAccuracy: 0,
+      averageKillChainAccuracy: 0,
+      attackInferenceAccuracy: 0,
     };
   }
 
@@ -248,6 +316,34 @@ export function getDashboardStats(): DashboardStats {
     0,
   );
 
+  const killChainAttempts = attempts.filter(
+    (attempt) => typeof attempt.killChainAccuracy === 'number',
+  );
+  const totalKillChainAccuracy = killChainAttempts.reduce(
+    (sum, attempt) => sum + (attempt.killChainAccuracy ?? 0),
+    0,
+  );
+  const averageKillChainAccuracy =
+    killChainAttempts.length > 0
+      ? Math.round(totalKillChainAccuracy / killChainAttempts.length)
+      : 0;
+
+  const attackInferenceAttempts = attempts.filter(
+    (attempt) =>
+      attempt.attackInferenceCorrect === true ||
+      attempt.attackInferenceCorrect === false,
+  );
+  const attackInferenceAccuracy =
+    attackInferenceAttempts.length > 0
+      ? Math.round(
+          (attackInferenceAttempts.filter(
+            (attempt) => attempt.attackInferenceCorrect === true,
+          ).length /
+            attackInferenceAttempts.length) *
+            100,
+        )
+      : 0;
+
   return {
     completedCases,
     completedCount,
@@ -260,6 +356,8 @@ export function getDashboardStats(): DashboardStats {
     averageConfidence: totalConfidence / attempts.length,
     progressPercent: Math.round((completedCount / TOTAL_CASE_COUNT) * 100),
     averageSelectionAccuracy: Math.round(totalSelectionAccuracy / attempts.length),
+    averageKillChainAccuracy,
+    attackInferenceAccuracy,
   };
 }
 
@@ -296,6 +394,9 @@ export function getLearningInsights(): LearningInsights {
       averageSelectionFP: 0,
       averageSelectionFN: 0,
       mostCommonSelectionErrors: [],
+      averageKillChainAccuracy: 0,
+      attackInferenceAccuracy: 0,
+      weakestStage: null,
     };
   }
 
@@ -397,6 +498,84 @@ export function getLearningInsights(): LearningInsights {
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
 
+  const killChainAttempts = attempts.filter(
+    (attempt) => typeof attempt.killChainAccuracy === 'number',
+  );
+  const averageKillChainAccuracy =
+    killChainAttempts.length > 0
+      ? Math.round(
+          killChainAttempts.reduce(
+            (sum, attempt) => sum + (attempt.killChainAccuracy ?? 0),
+            0,
+          ) / killChainAttempts.length,
+        )
+      : 0;
+
+  const attackInferenceAttempts = attempts.filter(
+    (attempt) =>
+      attempt.attackInferenceCorrect === true ||
+      attempt.attackInferenceCorrect === false,
+  );
+  const attackInferenceAccuracy =
+    attackInferenceAttempts.length > 0
+      ? Math.round(
+          (attackInferenceAttempts.filter(
+            (attempt) => attempt.attackInferenceCorrect === true,
+          ).length /
+            attackInferenceAttempts.length) *
+            100,
+        )
+      : 0;
+
+  const stageAverages: Array<{
+    stage: InvestigationStage;
+    accuracy: number;
+    sampleCount: number;
+  }> = [
+    {
+      stage: 'Evidence Selection',
+      accuracy: Math.round(totalSelectionAccuracy / attempts.length),
+      sampleCount: attempts.length,
+    },
+    {
+      stage: 'Timeline Ordering',
+      accuracy: averageScore,
+      sampleCount: attempts.length,
+    },
+    {
+      stage: 'Kill Chain Mapping',
+      accuracy: averageKillChainAccuracy,
+      sampleCount: killChainAttempts.length,
+    },
+    {
+      stage: 'Attack Inference',
+      accuracy: attackInferenceAccuracy,
+      sampleCount: attackInferenceAttempts.length,
+    },
+  ];
+
+  const stagesWithData = stageAverages.filter(
+    (entry) => entry.sampleCount > 0,
+  );
+  const lowestSampleCount = stagesWithData.reduce(
+    (min, entry) => Math.min(min, entry.sampleCount),
+    Number.POSITIVE_INFINITY,
+  );
+  const comparableStages = stagesWithData.filter(
+    (entry) => entry.sampleCount === lowestSampleCount,
+  );
+  let weakestStage: WeakestStageEntry | null = null;
+  if (comparableStages.length > 1) {
+    const lowest = comparableStages.reduce((min, entry) =>
+      entry.accuracy < min.accuracy ? entry : min,
+    );
+    weakestStage = {
+      stage: lowest.stage,
+      accuracy: lowest.accuracy,
+      sampleCount: lowest.sampleCount,
+    };
+  }
+
   return {
     mostCommonMistakes,
     averageScore,
@@ -407,5 +586,8 @@ export function getLearningInsights(): LearningInsights {
     averageSelectionFP: Math.round((totalSelectionFP / attempts.length) * 10) / 10,
     averageSelectionFN: Math.round((totalSelectionFN / attempts.length) * 10) / 10,
     mostCommonSelectionErrors,
+    averageKillChainAccuracy,
+    attackInferenceAccuracy,
+    weakestStage,
   };
 }

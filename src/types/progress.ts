@@ -21,6 +21,17 @@ export interface AttemptRecord {
    * never sent off-device.
    */
   sessionLog?: InteractionEvent[];
+  /**
+   * Stage 3 — Cyber Kill Chain mapping accuracy 0..100. Populated when
+   * the learner completes the Kill Chain stage; absent for older attempts.
+   */
+  killChainAccuracy?: number;
+  /**
+   * Stage 4 — whether the learner inferred the correct attack type.
+   * `true`/`false` indicates a definitive answer; `null` indicates the
+   * learner skipped or did not answer the stage.
+   */
+  attackInferenceCorrect?: boolean | null;
 }
 
 /** Recognised learner interaction events during a single exercise session. */
@@ -80,6 +91,18 @@ export interface DashboardStats {
   averageConfidence: number;
   progressPercent: number;
   averageSelectionAccuracy: number;
+  /**
+   * Stage 3 — average Cyber Kill Chain accuracy across attempts that
+   * recorded a `killChainAccuracy` value. Returns 0 when no attempts have
+   * recorded one.
+   */
+  averageKillChainAccuracy: number;
+  /**
+   * Stage 4 — proportion of attempts where the learner inferred the
+   * correct attack type, expressed as a percentage 0..100. Returns 0
+   * when no attempts have recorded an answer.
+   */
+  attackInferenceAccuracy: number;
 }
 
 export interface AttemptHistoryEntry {
@@ -108,4 +131,37 @@ export interface LearningInsights {
   averageSelectionFP: number;
   averageSelectionFN: number;
   mostCommonSelectionErrors: SelectionErrorEntry[];
+  /**
+   * Stage 3 — average Cyber Kill Chain accuracy across attempts that
+   * recorded a `killChainAccuracy` value. Returns 0 when no attempts have
+   * recorded one.
+   */
+  averageKillChainAccuracy: number;
+  /**
+   * Stage 4 — proportion of attempts where the learner inferred the
+   * correct attack type, expressed as a percentage 0..100. Returns 0
+   * when no attempts have recorded an answer.
+   */
+  attackInferenceAccuracy: number;
+  /**
+   * The investigation stage learners performed worst on, computed from
+   * the per-stage averages. `null` indicates no stage has enough data
+   * to compare, or the learner performed equally across stages.
+   */
+  weakestStage: WeakestStageEntry | null;
+}
+
+/** Investigation stages that can be measured by the dashboard analytics. */
+export type InvestigationStage =
+  | 'Evidence Selection'
+  | 'Timeline Ordering'
+  | 'Kill Chain Mapping'
+  | 'Attack Inference';
+
+export interface WeakestStageEntry {
+  stage: InvestigationStage;
+  /** The stage's average accuracy, percentage 0..100. */
+  accuracy: number;
+  /** Per-attempt count that contributed to the stage's average. */
+  sampleCount: number;
 }

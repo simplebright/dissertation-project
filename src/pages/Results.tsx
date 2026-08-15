@@ -9,6 +9,7 @@ import { MistakeList } from '../components/ui/MistakeList';
 import { EmptyState, PageActions } from '../components/ui/PageLayout';
 import { PageHeader } from '../components/ui/PageHeader';
 import { StatCard } from '../components/ui/StatCard';
+import { buildInvestigationSummary } from '../utils/buildInvestigationSummary';
 import { formatDuration } from '../utils/formatDuration';
 import { isResultsLocationState } from '../utils/resultsState';
 import { updateAttemptConfidence } from '../utils/progressStorage';
@@ -44,6 +45,15 @@ export function Results() {
   const nextCaseId = getNextCaseId(caseId);
   const correctFeedback = result.feedback.filter((item) => item.isCorrect);
   const incorrectFeedback = result.feedback.filter((item) => !item.isCorrect);
+  const investigationSummary = investigationCase
+    ? buildInvestigationSummary({
+        investigationCase,
+        selection,
+        timeline: result,
+        killChainResult: state.killChainResult,
+        attackInferenceResult: state.attackInferenceResult,
+      })
+    : null;
 
   const handleConfidenceSelect = (value: number) => {
     setConfidence(value);
@@ -213,6 +223,229 @@ export function Results() {
             variant="incorrect"
             ariaLabel="Mistake analysis"
           />
+        </Card>
+
+        <Card as="section" className="mt-8" aria-labelledby="stage3-heading">
+          <h2
+            id="stage3-heading"
+            className="edu-section-title"
+          >
+            Cyber Kill Chain Mapping Results
+          </h2>
+          {state.killChainResult ? (
+            <>
+              <p className="mt-3 leading-relaxed text-slate-700">
+                {state.killChainResult.summary}
+              </p>
+              <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                <StatCard
+                  label="Kill Chain Accuracy"
+                  value={`${state.killChainResult.accuracy}%`}
+                  valueClassName={
+                    state.killChainResult.accuracy === 100
+                      ? 'text-emerald-600'
+                      : state.killChainResult.accuracy >= 70
+                        ? 'text-edu-600'
+                        : 'text-rose-600'
+                  }
+                />
+                <StatCard
+                  label="Correct Mappings"
+                  value={`${state.killChainResult.correctCount} / ${state.killChainResult.totalCount}`}
+                  valueClassName="text-emerald-600"
+                />
+                <StatCard
+                  label="Incorrect Mappings"
+                  value={String(state.killChainResult.incorrectCount)}
+                  valueClassName={
+                    state.killChainResult.incorrectCount === 0
+                      ? 'text-emerald-600'
+                      : 'text-rose-600'
+                  }
+                />
+              </div>
+
+              <div className="mt-8 border-t border-edu-100 pt-6">
+                <h3
+                  id="kill-chain-feedback-heading"
+                  className="text-base font-semibold text-edu-900"
+                >
+                  Educational Explanations
+                </h3>
+                <p className="mt-1 text-xs leading-relaxed text-slate-600">
+                  Each explanation describes why the artefact belongs in its
+                  expected Cyber Kill Chain stage. Use these to refine how you
+                  classify evidence on future cases.
+                </p>
+                <ul
+                  className="mt-4 flex flex-col gap-3"
+                  aria-labelledby="kill-chain-feedback-heading"
+                >
+                  {state.killChainResult.feedback.map((item) => {
+                    const isCorrect = item.isCorrect;
+                    return (
+                      <li
+                        key={`kill-chain-${item.eventId}`}
+                        className={
+                          isCorrect
+                            ? 'rounded-xl border border-emerald-100 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-900'
+                            : item.isMapped
+                              ? 'rounded-xl border border-rose-100 bg-rose-50/80 px-4 py-3 text-sm text-rose-900'
+                              : 'rounded-xl border border-amber-100 bg-amber-50/80 px-4 py-3 text-sm text-amber-900'
+                        }
+                      >
+                        <p className="font-medium">{item.headline}</p>
+                        <p className="mt-1 leading-relaxed">
+                          {item.explanation}
+                        </p>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </>
+          ) : (
+            <p className="mt-3 text-sm text-slate-500">
+              Cyber Kill Chain mapping was skipped for this attempt.
+            </p>
+          )}
+        </Card>
+
+        <Card as="section" className="mt-8" aria-labelledby="stage4-heading">
+          <h2
+            id="stage4-heading"
+            className="edu-section-title"
+          >
+            Attack Inference Results
+          </h2>
+          {state.attackInferenceResult ? (
+            <>
+              <p
+                className={`mt-3 font-semibold ${
+                  state.attackInferenceResult.isCorrect
+                    ? 'text-emerald-700'
+                    : state.attackInferenceResult.isAnswered
+                      ? 'text-rose-700'
+                      : 'text-slate-700'
+                }`}
+              >
+                {state.attackInferenceResult.headline}
+              </p>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <StatCard
+                  label="Your Answer"
+                  value={
+                    state.attackInferenceResult.selectedAttackType ?? '—'
+                  }
+                  valueClassName={
+                    state.attackInferenceResult.isCorrect
+                      ? 'text-emerald-600'
+                      : 'text-rose-600'
+                  }
+                />
+                <StatCard
+                  label="Correct Answer"
+                  value={state.attackInferenceResult.expectedAttackType}
+                  valueClassName="text-edu-700"
+                />
+              </div>
+
+              <div className="mt-6 border-t border-edu-100 pt-6">
+                <h3
+                  id="attack-inference-explanation-heading"
+                  className="text-base font-semibold text-edu-900"
+                >
+                  Investigation Explanation
+                </h3>
+                <p className="mt-2 leading-relaxed text-slate-700">
+                  {state.attackInferenceResult.explanation}
+                </p>
+              </div>
+
+              <div className="mt-6 border-t border-edu-100 pt-6">
+                <h3
+                  id="attack-inference-reasoning-heading"
+                  className="text-base font-semibold text-edu-900"
+                >
+                  Suggested Reasoning
+                </h3>
+                <p className="mt-2 leading-relaxed text-slate-700">
+                  {state.attackInferenceResult.suggestedReasoning}
+                </p>
+              </div>
+            </>
+          ) : (
+            <p className="mt-3 text-sm text-slate-500">
+              Attack inference was skipped for this attempt.
+            </p>
+          )}
+        </Card>
+
+        <Card
+          as="section"
+          className="mt-8"
+          aria-labelledby="investigation-summary-heading"
+        >
+          <h2
+            id="investigation-summary-heading"
+            className="edu-section-title"
+          >
+            Investigation Summary
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">
+            A connected reading of the four stages — the case is best
+            understood as one continuous forensic argument, not four separate
+            scores.
+          </p>
+
+          {investigationSummary ? (
+            <>
+              <ol
+                className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+                aria-label="Investigation stages"
+              >
+                {investigationSummary.steps.map((step) => (
+                  <li
+                    key={`investigation-step-${step.number}`}
+                    className="relative flex h-full flex-col rounded-2xl border border-edu-100 bg-gradient-to-br from-edu-50 to-white p-4"
+                  >
+                    <span
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-edu-600 text-sm font-semibold text-white shadow-sm shadow-blue-900/10"
+                      aria-hidden="true"
+                    >
+                      {step.number}
+                    </span>
+                    <h3 className="mt-3 text-sm font-semibold text-edu-900">
+                      {step.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-700">
+                      {step.body}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+
+              <div className="mt-8 border-t border-edu-100 pt-6">
+                <h3
+                  id="investigation-narrative-heading"
+                  className="text-base font-semibold text-edu-900"
+                >
+                  Why the Evidence Supports{' '}
+                  <span className="text-edu-700">
+                    {investigationSummary.attackType}
+                  </span>
+                </h3>
+                <p className="mt-3 leading-relaxed text-slate-700">
+                  {investigationSummary.narrative}
+                </p>
+              </div>
+            </>
+          ) : (
+            <p className="mt-4 text-sm text-slate-500">
+              The investigation summary is unavailable because the case
+              metadata could not be loaded.
+            </p>
+          )}
         </Card>
 
         <Card as="section" className="mt-8" aria-labelledby="confidence-heading">

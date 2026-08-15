@@ -217,6 +217,81 @@ export function Dashboard() {
           )}
         </Card>
 
+        <Card as="section" className="mt-8" aria-labelledby="stages-heading">
+          <h2 id="stages-heading" className="edu-section-title">
+            Investigation Stage Accuracy
+          </h2>
+          <p className="mt-2 text-sm text-slate-600">
+            Tracks how accurately you perform at each of the four investigation stages.
+            Stages with no recorded data show as —.
+          </p>
+
+          {hasData ? (
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <StatCard
+                label="Avg. Selection Accuracy"
+                value={`${insights.averageSelectionAccuracy}%`}
+                valueClassName={
+                  insights.averageSelectionAccuracy === 100
+                    ? 'text-emerald-600'
+                    : insights.averageSelectionAccuracy >= 70
+                      ? 'text-edu-600'
+                      : 'text-rose-600'
+                }
+              />
+              <StatCard
+                label="Avg. Ordering Accuracy"
+                value={`${Math.round(stats.averageAccuracy * 100)}%`}
+                valueClassName={
+                  Math.round(stats.averageAccuracy * 100) === 100
+                    ? 'text-emerald-600'
+                    : stats.averageAccuracy >= 0.7
+                      ? 'text-edu-600'
+                      : 'text-rose-600'
+                }
+              />
+              <StatCard
+                label="Avg. Kill Chain Accuracy"
+                value={
+                  insights.averageKillChainAccuracy === 0
+                    ? '—'
+                    : `${insights.averageKillChainAccuracy}%`
+                }
+                valueClassName={
+                  insights.averageKillChainAccuracy === 0
+                    ? 'text-slate-400'
+                    : insights.averageKillChainAccuracy === 100
+                      ? 'text-emerald-600'
+                      : insights.averageKillChainAccuracy >= 70
+                        ? 'text-edu-600'
+                        : 'text-rose-600'
+                }
+              />
+              <StatCard
+                label="Attack Inference Accuracy"
+                value={
+                  insights.attackInferenceAccuracy === 0
+                    ? '—'
+                    : `${insights.attackInferenceAccuracy}%`
+                }
+                valueClassName={
+                  insights.attackInferenceAccuracy === 0
+                    ? 'text-slate-400'
+                    : insights.attackInferenceAccuracy === 100
+                      ? 'text-emerald-600'
+                      : insights.attackInferenceAccuracy >= 70
+                        ? 'text-edu-600'
+                        : 'text-rose-600'
+                }
+              />
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-slate-500">
+              Stage analytics will appear after you complete your first case.
+            </p>
+          )}
+        </Card>
+
         <section aria-labelledby="insights-heading" className="mt-8">
           <h2 id="insights-heading" className="edu-section-title">
             Learning Insights
@@ -281,6 +356,44 @@ export function Dashboard() {
               </Card>
             </div>
           )}
+
+          <Card
+            as="div"
+            className="mt-4"
+            aria-labelledby="weakest-stage-heading"
+          >
+            <h3
+              id="weakest-stage-heading"
+              className="text-sm font-semibold text-edu-900"
+            >
+              Where to Focus Next
+            </h3>
+            {insights.weakestStage ? (
+              <>
+                <p className="mt-2 text-sm leading-relaxed text-slate-700">
+                  Your weakest investigation stage is{' '}
+                  <span className="font-semibold text-edu-800">
+                    {insights.weakestStage.stage}
+                  </span>{' '}
+                  ({insights.weakestStage.accuracy}% average accuracy across{' '}
+                  {insights.weakestStage.sampleCount} sample
+                  {insights.weakestStage.sampleCount === 1 ? '' : 's'}). Revisit
+                  the educational explanations on the Results page for this
+                  stage and practice a case from that stage until your accuracy
+                  rises above your other stages.
+                </p>
+                <p className="mt-2 text-xs leading-relaxed text-slate-500">
+                  We compare only stages with the same sample size so that the
+                  weaker stages are not unfairly penalised by sparse data.
+                </p>
+              </>
+            ) : (
+              <p className="mt-2 text-sm text-slate-600">
+                Complete cases across more investigation stages to surface
+                which stage to focus on.
+              </p>
+            )}
+          </Card>
         </section>
 
         <Card as="section" className="mt-8" aria-labelledby="history-heading">

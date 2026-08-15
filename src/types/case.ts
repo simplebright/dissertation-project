@@ -10,6 +10,10 @@ export type Difficulty = 'Beginner' | 'Intermediate' | 'Advanced';
 
 export type EventType = 'history' | 'search' | 'cookie' | 'download';
 
+export type KillChainStage = 'Reconnaissance' | 'Delivery' | 'Exploitation' | 'Installation' | 'Actions';
+
+export type AttackType = 'Phishing' | 'Malware Download' | 'Credential Theft' | 'Benign Activity';
+
 export interface ForensicEvent {
   id: string;
   timestamp: string;
@@ -17,6 +21,7 @@ export interface ForensicEvent {
   description: string;
   correctOrder: number;
   isRelevant: boolean;
+  killChainStage?: KillChainStage;
   explanation?: string;
   relationships?: EventRelationship[];
   hints?: string[];
@@ -32,5 +37,6 @@ export interface CaseSummary {
 }
 
 export interface InvestigationCase extends CaseSummary {
+  attackType: AttackType;
   events: ForensicEvent[];
 }
